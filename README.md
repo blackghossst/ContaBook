@@ -73,7 +73,7 @@ Sistema de registro y gestión de libros de cuentas desarrollado en Java con int
 ### 1. Clonar el Repositorio
 
 ```bash
-git clone https://github.com/tu-usuario/contabook.git
+git clone https://github.com/blackghossst/ContaBook.git
 cd contabook
 ```
 
@@ -340,54 +340,16 @@ ContaBook/
 ## 📸 Capturas de Pantalla
 
 ### Portada de Bienvenida
-```
-┌──────────────────────────────────────┐
-│          🧮 ContaBook                │
-│  "Sistema de contabilidad empresarial"│
-│                                      │
-│  ¿Qué es ContaBook?                  │
-│  [Descripción del sistema...]        │
-│                                      │
-│  [CONTINUAR AL SISTEMA]              │
-└──────────────────────────────────────┘
-```
+<img width="1231" height="865" alt="image" src="https://github.com/user-attachments/assets/713ff6e6-fe3a-4184-aa0f-f0e5d75cfabb" />
+
 
 ### Login
-```
-┌──────────────────────────────────────┐
-│     🧮 ContaBook                     │
-│ "Sistema de contabilidad empresarial"│
-│                                      │
-│  📋 Iniciar Sesión                   │
-│  Usuario: [__________]               │
-│  Contraseña: [__________]            │
-│  [Iniciar Sesión]                    │
-│  ¿No tienes cuenta? Regístrate aquí  │
-└──────────────────────────────────────┘
-```
+<img width="983" height="743" alt="image" src="https://github.com/user-attachments/assets/7d2b7009-724d-4285-b692-64b466eb7297" />
+
 
 ### Dashboard Principal
-```
-┌────────────────────────────────────────────────────────────┐
-│ ContaBook - Libro de Cuentas    Juan Pérez | Admin [Cerrar]│
-├────────────────────────────────────────────────────────────┤
-│ [Panel Principal][Períodos][Reportes][Usuarios]            │
-├────────────────────────────────────────────────────────────┤
-│ ┌──────────────┐  │  📋 Registro de Transacciones (12)    │
-│ │Total Ingresos│  │  ┌──────────────────────────────────┐ │
-│ │  9800.00 US$ │  │  │Fecha│Tipo│Cat│Desc│Monto│📄│✏️│🗑️│ │
-│ ├──────────────┤  │  ├──────────────────────────────────┤ │
-│ │Total Gastos  │  │  │14/12│Ing │...│...│+2800│📄│✏️│🗑️│ │
-│ │ -1730.00 US$ │  │  │12/12│Gas │...│...│-800 │- │✏️│🗑️│ │
-│ ├──────────────┤  │  └──────────────────────────────────┘ │
-│ │Balance       │  │                                        │
-│ │  8070.00 US$ │  │                                        │
-│ └──────────────┘  │                                        │
-│ [+ Nueva Partida] │                                        │
-└────────────────────────────────────────────────────────────┘
-```
+<img width="1919" height="1019" alt="image" src="https://github.com/user-attachments/assets/1697e73a-cf9a-4aa7-bcb7-99852888cb48" />
 
----
 
 ## 🛠️ Tecnologías Utilizadas
 
@@ -482,72 +444,17 @@ psql -U postgres -c "SHOW port;"
 - ✅ Adjuntar documentos
 - ✅ Resumen financiero en tiempo real
 
-### Próximas Funcionalidades
-
-#### Versión 1.1.0
-- [ ] Exportar reportes a PDF
-- [ ] Exportar datos a Excel
-- [ ] Filtros avanzados en tabla
-- [ ] Búsqueda de transacciones
-
-#### Versión 1.2.0
-- [ ] Gráficas estadísticas
-- [ ] Reportes por períodos
-- [ ] Categorías personalizables
-- [ ] Backup automático de BD
-
-#### Versión 2.0.0
-- [ ] Interfaz web con Spring Boot
-- [ ] API REST
-- [ ] Multi-empresa
-- [ ] App móvil
-
----
-
-## 🤝 Contribuciones
-
-Las contribuciones son bienvenidas. Para cambios importantes:
-
-1. Fork el proyecto
-2. Crea una rama (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
----
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver archivo `LICENSE` para más detalles.
-
----
-
 ## 👨‍💻 Autor
 
-**nemma**
+**Nestor Mendoza**
 - GitHub: [@nemma](https://github.com/nemma)
-- Email: contacto@contabook.com
+- Email: nemmanuel2001@gmail.com
+
+- **Melida Fuentes**
+- Github:
+- Email: fm21015@ues.edu.sv
 
 ---
-
-## 🙏 Agradecimientos
-
-- PostgreSQL por el excelente sistema de base de datos
-- Oracle por Java y Swing
-- Comunidad de Stack Overflow por el apoyo
-
----
-
-## 📞 Soporte
-
-¿Tienes problemas o preguntas? 
-
-- 📧 Email: soporte@contabook.com
-- 🐛 Issues: [GitHub Issues](https://github.com/nemma/contabook/issues)
-- 📖 Wiki: [Documentación completa](https://github.com/nemma/contabook/wiki)
-
----
-
 <div align="center">
 
 **⭐ Si te gustó este proyecto, dale una estrella en GitHub ⭐**

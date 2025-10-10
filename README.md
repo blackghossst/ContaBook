@@ -1,9 +1,4 @@
 # 🧮 ContaBook - Sistema de Contabilidad Empresarial
-
-[![Java](https://img.shields.io/badge/Java-11+-orange.svg)](https://www.oracle.com/java/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13+-blue.svg)](https://www.postgresql.org/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-
 Sistema de registro y gestión de libros de cuentas desarrollado en Java con interfaz gráfica Swing y base de datos PostgreSQL.
 
 ---

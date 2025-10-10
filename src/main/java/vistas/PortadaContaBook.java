@@ -72,14 +72,14 @@ public class PortadaContaBook extends JFrame {
         
         JTextArea txtDescripcion = new JTextArea();
         txtDescripcion.setText(
-            "ContaBook es una aplicación web diseñada para facilitar el registro\n" +
-            "y gestión de libros de cuentas. Permite a usuarios y empresas llevar\n" +
-            "un control detallado de sus transacciones contables de manera\n" +
-            "eficiente, organizada y segura.\n\n" +
-            "✓ Registro de ingresos y egresos\n" +
-            "✓ Gestión de cuentas contables\n" +
-            "✓ Generación de reportes financieros\n" +
-            "✓ Interfaz intuitiva y fácil de usar"
+            "ContaBook es una aplicación de escritorio diseñada para facilitar el registro\n" +
+"y gestión de libros de cuentas de forma local. Permite a usuarios y empresas llevar\n" +
+"un control detallado de sus transacciones contables de manera\n" +
+"eficiente, organizada y segura sin depender de un navegador web.\n\n" +
+"✓ Registro de ingresos y egresos\n" +
+"✓ Gestión de cuentas contables\n" +
+"✓ Generación de reportes financieros\n" +
+"✓ Interfaz intuitiva y fácil de usar"
         );
         txtDescripcion.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         txtDescripcion.setForeground(new Color(80, 80, 80)); // Gris oscuro
@@ -114,7 +114,7 @@ public class PortadaContaBook extends JFrame {
         btnIngresar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                login lo = new login();
+                LoginVista lo = new LoginVista();
                 lo.setVisible(true);
                 
                 // Cerrar la ventana de portada

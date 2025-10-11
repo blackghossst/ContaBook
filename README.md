@@ -682,18 +682,21 @@ $ LANGUAGE plpgsql;
 | Ver documento | - | - | ✅ Archivo abierto | ✅ PASS |
 
 Mensajes de Prueba
+
 Mensajes de Error
 ❌ "Usuario o contraseña incorrectos"
 ❌ "No tiene permisos para editar partidas"
 ❌ "Las contraseñas no coinciden"
 ❌ "El monto debe ser mayor a cero"
 ❌ "Error: No se pudo conectar a la base de datos"
+
 Mensajes de Éxito
 ✅ "¡Bienvenido a ContaBook!"
 ✅ "Partida agregada exitosamente"
 ✅ "Partida actualizada exitosamente"
 ✅ "Partida eliminada exitosamente"
 ✅ "Registro exitoso!"
+
 Mensajes de Advertencia
 ⚠️ "Por favor, complete todos los campos"
 ⚠️ "Debe ingresar su contraseña para eliminar"

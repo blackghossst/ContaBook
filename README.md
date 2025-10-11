@@ -337,19 +337,395 @@ ContaBook/
 
 ---
 
+## 🗄️ Esquema de Base de Datos
+
+### Diagrama Entidad-Relación
+
+```
+┌─────────────────────┐         ┌──────────────────────┐
+│      USUARIO        │         │    TRANSACCIONES     │
+├─────────────────────┤         ├──────────────────────┤
+│ idusuario (PK)      │         │ idtransaccion (PK)   │
+│ nombre              │    1    │ fecha                │
+│ apellido            │────┐    │ referencia           │
+│ usuario (UNIQUE)    │    │    │ tipo                 │
+│ contraseña          │    │    │ categoria            │
+│ rol                 │    │    │ descripcion          │
+└─────────────────────┘    │    │ monto                │
+                           └───→│ usuario (FK)         │
+                                │ documento            │
+                                │ fecha_registro       │
+                                └──────────────────────┘
+```
+
+### Relaciones
+
+- **Usuario → Transacciones**: Un usuario puede crear múltiples transacciones (1:N)
+- **Tipo de relación**: Uno a Muchos
+- **Clave foránea**: `transacciones.usuario` referencia `usuario.nombre + apellido`
+
+### Tipos de Datos
+
+#### Tabla USUARIO
+| Campo | Tipo | Restricción | Descripción |
+|-------|------|-------------|-------------|
+| idusuario | SERIAL | PRIMARY KEY | Identificador único autoincremental |
+| nombre | VARCHAR(100) | NOT NULL | Nombre del usuario |
+| apellido | VARCHAR(100) | NOT NULL | Apellido del usuario |
+| usuario | VARCHAR(50) | UNIQUE, NOT NULL | Nombre de usuario único |
+| contraseña | VARCHAR(255) | NOT NULL | Contraseña encriptada SHA-256 |
+| rol | VARCHAR(50) | NOT NULL | Rol: Usuario/Contador/Admin |
+
+#### Tabla TRANSACCIONES
+| Campo | Tipo | Restricción | Descripción |
+|-------|------|-------------|-------------|
+| idtransaccion | SERIAL | PRIMARY KEY | Identificador único autoincremental |
+| fecha | VARCHAR(20) | NOT NULL | Fecha de la transacción (DD/MM/YYYY) |
+| referencia | VARCHAR(100) | NULL | Número de referencia o documento |
+| tipo | VARCHAR(20) | NOT NULL, CHECK | 'Ingreso' o 'Gasto' |
+| categoria | VARCHAR(100) | NULL | Categoría de la transacción |
+| descripcion | TEXT | NULL | Descripción detallada |
+| monto | DECIMAL(10,2) | NOT NULL | Monto en dólares |
+| usuario | VARCHAR(200) | NULL | Usuario que registró |
+| documento | BYTEA | NULL | Archivo adjunto en binario |
+| fecha_registro | TIMESTAMP | DEFAULT NOW() | Fecha y hora de creación |
+
+---
+
+## 📊 Libro Diario vs Libro Mayor
+
+### 📖 Libro Diario (Implementado)
+
+El **Libro Diario** registra todas las transacciones en orden cronológico:
+
+```sql
+-- Vista de Libro Diario
+SELECT 
+    fecha,
+    referencia,
+    tipo,
+    categoria,
+    descripcion,
+    monto,
+    usuario
+FROM transacciones
+ORDER BY fecha_registro DESC;
+```
+
+**Ejemplo de salida:**
+
+| Fecha | Ref | Tipo | Categoría | Descripción | Monto |
+|-------|-----|------|-----------|-------------|-------|
+| 14/12/2024 | 001 | Ingreso | Ventas | Venta productos Q1 | +2800.00 |
+| 12/12/2024 | 002 | Gasto | Materia Prima | Compra materiales | -800.00 |
+| 12/12/2024 | 003 | Ingreso | Servicios | Consultoría ABC | +1200.00 |
+
+### 📚 Libro Mayor (Consulta SQL)
+
+El **Libro Mayor** agrupa las transacciones por categoría:
+
+```sql
+-- Vista de Libro Mayor por Categoría
+CREATE OR REPLACE VIEW libro_mayor AS
+SELECT 
+    categoria,
+    tipo,
+    COUNT(*) as total_movimientos,
+    SUM(CASE WHEN tipo = 'Ingreso' THEN monto ELSE 0 END) as total_ingresos,
+    SUM(CASE WHEN tipo = 'Gasto' THEN monto ELSE 0 END) as total_gastos,
+    SUM(CASE WHEN tipo = 'Ingreso' THEN monto ELSE -monto END) as saldo
+FROM transacciones
+GROUP BY categoria, tipo
+ORDER BY categoria;
+
+-- Consultar Libro Mayor
+SELECT * FROM libro_mayor;
+```
+
+**Ejemplo de salida:**
+
+| Categoría | Tipo | Movimientos | Ingresos | Gastos | Saldo |
+|-----------|------|-------------|----------|--------|-------|
+| Ventas | Ingreso | 15 | $45,000 | $0 | +$45,000 |
+| Materia Prima | Gasto | 8 | $0 | $12,000 | -$12,000 |
+| Servicios | Ingreso | 5 | $8,000 | $0 | +$8,000 |
+| Nómina | Gasto | 3 | $0 | $9,000 | -$9,000 |
+
+### 🔍 Consultas Adicionales del Libro Mayor
+
+```sql
+-- Resumen por mes
+SELECT 
+    DATE_TRUNC('month', fecha_registro) as mes,
+    tipo,
+    SUM(monto) as total
+FROM transacciones
+GROUP BY mes, tipo
+ORDER BY mes DESC;
+
+-- Balance por período
+SELECT 
+    DATE_TRUNC('month', fecha_registro) as periodo,
+    SUM(CASE WHEN tipo = 'Ingreso' THEN monto ELSE 0 END) as ingresos,
+    SUM(CASE WHEN tipo = 'Gasto' THEN monto ELSE 0 END) as gastos,
+    SUM(CASE WHEN tipo = 'Ingreso' THEN monto ELSE -monto END) as balance
+FROM transacciones
+GROUP BY periodo
+ORDER BY periodo DESC;
+```
+
+---
+
+## 📦 Scripts SQL Completos
+
+### script_database.sql
+
+Archivo completo para crear la base de datos:
+
+```sql
+-- ============================================
+-- SCRIPT DE CREACIÓN DE BASE DE DATOS
+-- ContaBook - Sistema de Contabilidad
+-- Versión: 1.0.0
+-- Base de Datos: PostgreSQL 13+
+-- ============================================
+
+-- Crear base de datos
+CREATE DATABASE Contabook
+    WITH 
+    OWNER = postgres
+    ENCODING = 'UTF8'
+    LC_COLLATE = 'en_US.UTF-8'
+    LC_CTYPE = 'en_US.UTF-8'
+    TABLESPACE = pg_default
+    CONNECTION LIMIT = -1;
+
+-- Conectar a la base de datos
+\c Contabook
+
+-- ============================================
+-- TABLA: usuario
+-- Descripción: Almacena información de usuarios del sistema
+-- ============================================
+CREATE TABLE IF NOT EXISTS usuario (
+    idusuario SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    apellido VARCHAR(100) NOT NULL,
+    usuario VARCHAR(50) UNIQUE NOT NULL,
+    contraseña VARCHAR(255) NOT NULL,
+    rol VARCHAR(50) NOT NULL CHECK (rol IN ('Usuario', 'Contador', 'Admin', 'Administrador')),
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================
+-- TABLA: transacciones
+-- Descripción: Registro de todas las operaciones contables
+-- ============================================
+CREATE TABLE IF NOT EXISTS transacciones (
+    idtransaccion SERIAL PRIMARY KEY,
+    fecha VARCHAR(20) NOT NULL,
+    referencia VARCHAR(100),
+    tipo VARCHAR(20) NOT NULL CHECK (tipo IN ('Ingreso', 'Gasto')),
+    categoria VARCHAR(100),
+    descripcion TEXT,
+    monto DECIMAL(10, 2) NOT NULL CHECK (monto > 0),
+    usuario VARCHAR(200),
+    documento BYTEA,
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================
+-- ÍNDICES PARA OPTIMIZACIÓN
+-- ============================================
+CREATE INDEX idx_tipo ON transacciones(tipo);
+CREATE INDEX idx_fecha ON transacciones(fecha);
+CREATE INDEX idx_usuario_tabla ON transacciones(usuario);
+CREATE INDEX idx_usuario_login ON usuario(usuario);
+CREATE INDEX idx_categoria ON transacciones(categoria);
+CREATE INDEX idx_fecha_registro ON transacciones(fecha_registro);
+
+-- ============================================
+-- DATOS INICIALES
+-- ============================================
+
+-- Usuario Administrador por defecto
+-- Usuario: admin
+-- Contraseña: admin123 (SHA-256)
+INSERT INTO usuario (nombre, apellido, usuario, contraseña, rol) 
+VALUES (
+    'Admin', 
+    'Sistema', 
+    'admin', 
+    '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 
+    'Admin'
+) ON CONFLICT (usuario) DO NOTHING;
+
+-- Usuarios de prueba
+INSERT INTO usuario (nombre, apellido, usuario, contraseña, rol) VALUES
+('Juan', 'Pérez', 'jperez', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'Usuario'),
+('María', 'García', 'mgarcia', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'Contador')
+ON CONFLICT (usuario) DO NOTHING;
+
+-- Transacciones de ejemplo
+INSERT INTO transacciones (fecha, referencia, tipo, categoria, descripcion, monto, usuario) VALUES
+('14/12/2024', '001', 'Ingreso', 'Ventas', 'Venta de productos enero - primera quincena', 2800.00, 'Admin Sistema'),
+('12/12/2024', '002', 'Gasto', 'Materia Prima', 'Compra de materiales para producción', 800.00, 'Admin Sistema'),
+('12/12/2024', '003', 'Ingreso', 'Servicios', 'Consultoría técnica cliente ABC', 1200.00, 'Admin Sistema'),
+('11/12/2024', '004', 'Gasto', 'Nómina', 'Pago de sueldos diciembre', 3000.00, 'Admin Sistema'),
+('10/12/2024', '005', 'Ingreso', 'Ventas', 'Venta online productos varios', 1500.00, 'Admin Sistema')
+ON CONFLICT DO NOTHING;
+
+-- ============================================
+-- FUNCIONES ÚTILES
+-- ============================================
+
+-- Función: Obtener balance total
+CREATE OR REPLACE FUNCTION obtener_balance_total()
+RETURNS DECIMAL(10,2) AS $
+DECLARE
+    balance DECIMAL(10,2);
+BEGIN
+    SELECT 
+        SUM(CASE WHEN tipo = 'Ingreso' THEN monto ELSE -monto END)
+    INTO balance
+    FROM transacciones;
+    
+    RETURN COALESCE(balance, 0);
+END;
+$ LANGUAGE plpgsql;
+
+-- Función: Obtener transacciones por período
+CREATE OR REPLACE FUNCTION obtener_transacciones_periodo(
+    fecha_inicio DATE,
+    fecha_fin DATE
+)
+RETURNS TABLE (
+    id INTEGER,
+    fecha VARCHAR(20),
+    tipo VARCHAR(20),
+    categoria VARCHAR(100),
+    monto DECIMAL(10,2)
+) AS $
+BEGIN
+    RETURN QUERY
+    SELECT 
+        idtransaccion,
+        t.fecha,
+        t.tipo,
+        t.categoria,
+        t.monto
+    FROM transacciones t
+    WHERE t.fecha_registro BETWEEN fecha_inicio AND fecha_fin
+    ORDER BY t.fecha_registro DESC;
+END;
+$ LANGUAGE plpgsql;
+
+-- ============================================
+-- PERMISOS (Opcional)
+-- ============================================
+-- GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO contabook_user;
+-- GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO contabook_user;
+
+-- ============================================
+-- FIN DEL SCRIPT
+-- ============================================
+```
+
+---
+
+## 🧪 Pruebas y Evidencias
+
+### Casos de Prueba Documentados
+
+#### 1. Prueba de Login
+
+**Objetivo**: Verificar autenticación de usuarios
+
+| Caso | Usuario | Contraseña | Resultado Esperado | Resultado Real |
+|------|---------|------------|-------------------|----------------|
+| Login válido | admin | admin123 | ✅ Acceso concedido | ✅ PASS |
+| Login inválido | admin | wrong123 | ❌ Error de autenticación | ✅ PASS |
+| Campos vacíos | (vacío) | (vacío) | ⚠️ Validación de campos | ✅ PASS |
+
+#### 2. Prueba de Registro
+
+| Caso | Datos | Resultado Esperado | Resultado Real |
+|------|-------|-------------------|----------------|
+| Registro completo | Todos los campos llenos | ✅ Usuario creado | ✅ PASS |
+| Usuario duplicado | Usuario existente | ❌ Error: usuario ya existe | ✅ PASS |
+| Contraseñas no coinciden | Pass ≠ Confirm | ❌ Error de validación | ✅ PASS |
+
+#### 3. Prueba de Partidas
+
+| Operación | Tipo | Monto | Resultado Esperado | Resultado Real |
+|-----------|------|-------|-------------------|----------------|
+| Agregar Ingreso | Ingreso | $1000 | ✅ Partida creada | ✅ PASS |
+| Agregar Gasto | Gasto | $500 | ✅ Partida creada | ✅ PASS |
+| Editar partida | Ingreso | $1500 | ✅ Partida actualizada | ✅ PASS |
+| Eliminar con contraseña | - | - | ✅ Partida eliminada | ✅ PASS |
+| Eliminar sin contraseña | - | - | ❌ Acceso denegado | ✅ PASS |
+
+#### 4. Prueba de Permisos
+
+| Rol | Agregar | Editar | Eliminar | Ver Reportes | Gestionar Usuarios |
+|-----|---------|--------|----------|--------------|-------------------|
+| Usuario | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Contador | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Admin | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+#### 5. Prueba de Documentos
+
+| Operación | Tipo Archivo | Tamaño | Resultado Esperado | Resultado Real |
+|-----------|--------------|--------|-------------------|----------------|
+| Subir PDF | .pdf | 2MB | ✅ Documento guardado | ✅ PASS |
+| Subir Imagen | .jpg | 500KB | ✅ Documento guardado | ✅ PASS |
+| Ver documento | - | - | ✅ Archivo abierto | ✅ PASS |
+
+### Mensajes de Prueba
+
+#### Mensajes de Error
+```
+❌ "Usuario o contraseña incorrectos"
+❌ "No tiene permisos para editar partidas"
+❌ "Las contraseñas no coinciden"
+❌ "El monto debe ser mayor a cero"
+❌ "Error: No se pudo conectar a la base de datos"
+```
+
+#### Mensajes de Éxito
+```
+✅ "¡Bienvenido a ContaBook!"
+✅ "Partida agregada exitosamente"
+✅ "Partida actualizada exitosamente"
+✅ "Partida eliminada exitosamente"
+✅ "Registro exitoso!"
+```
+
+#### Mensajes de Advertencia
+```
+⚠️ "Por favor, complete todos los campos"
+⚠️ "Debe ingresar su contraseña para eliminar"
+⚠️ "El tipo debe ser 'Ingreso' o 'Gasto'"
+```
+
+### Capturas de Pantalla de Pruebas
+
+```
 ## 📸 Capturas de Pantalla
 
 ### Portada de Bienvenida
-<img width="1231" height="865" alt="image" src="https://github.com/user-attachments/assets/713ff6e6-fe3a-4184-aa0f-f0e5d75cfabb" />
+<img width="1230" height="865" alt="image" src="https://github.com/user-attachments/assets/5d6d42ec-84c4-45bf-8a2d-0f86e6c2270b" />
 
 
 ### Login
-<img width="983" height="743" alt="image" src="https://github.com/user-attachments/assets/7d2b7009-724d-4285-b692-64b466eb7297" />
+<img width="986" height="741" alt="image" src="https://github.com/user-attachments/assets/c86d74dc-a1bc-4f32-919e-eb9335f49e49" />
 
 
 ### Dashboard Principal
-<img width="1919" height="1019" alt="image" src="https://github.com/user-attachments/assets/1697e73a-cf9a-4aa7-bcb7-99852888cb48" />
+<img width="1919" height="1018" alt="image" src="https://github.com/user-attachments/assets/3b4f85aa-68b4-4b7f-a43f-15466475b539" />
 
+
+---
 
 ## 🛠️ Tecnologías Utilizadas
 
@@ -446,19 +822,15 @@ psql -U postgres -c "SHOW port;"
 
 ## 👨‍💻 Autor
 
-**Nestor Mendoza**
+**nemma**
 - GitHub: [@nemma](https://github.com/nemma)
 - Email: nemmanuel2001@gmail.com
 
-- **Melida Fuentes**
-- Github: Melida20
+- GitHub: Melida20
 - Email: fm21015@ues.edu.sv
 
----
 <div align="center">
 
-**⭐ Si te gustó este proyecto, dale una estrella en GitHub ⭐**
-
-Hecho con ❤️ por nemma
+**⭐ Proyecto 2025 Sistemas Contables ⭐**
 
 </div>

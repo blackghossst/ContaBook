@@ -708,55 +708,28 @@ $ LANGUAGE plpgsql;
 ⚠️ "El tipo debe ser 'Ingreso' o 'Gasto'"
 ```
 
-### Capturas de Pantalla de Pruebas
+📸 Capturas de Pantalla
+Portada de Bienvenida
+<img width="1229" height="863" alt="image" src="https://github.com/user-attachments/assets/1a67fab1-80df-434a-8b31-b9f7ea8b25a6" />
 
-```
-```
-## 📸 Capturas de Pantalla
-```
-```
-### Portada de Bienvenida
-```
-```
-<img width="1230" height="865" alt="image" src="https://github.com/user-attachments/assets/5d6d42ec-84c4-45bf-8a2d-0f86e6c2270b" />
-```
-```
+Login
+<img width="982" height="740" alt="image" src="https://github.com/user-attachments/assets/348fc997-7097-4fb2-b7dc-fe0f5b08515c" />
 
-### Login
-```
-```
-<img width="986" height="741" alt="image" src="https://github.com/user-attachments/assets/c86d74dc-a1bc-4f32-919e-eb9335f49e49" />
-```
-```
-### Dashboard Principal
-```
-```
-<img width="1919" height="1020" alt="image" src="https://github.com/user-attachments/assets/f716a2fe-394e-4c10-b12a-31750b523d3a" />
-```
-
-```
+Dashboard Principal
+<img width="1919" height="1019" alt="image" src="https://github.com/user-attachments/assets/32258ce5-2d3e-495b-81db-3d4190754d51" />
 
 
-## 🛠️ Tecnologías Utilizadas
-```
-| Tecnología | Versión | Uso |
-|------------|---------|-----|
-| **Java** | 11+ | Lenguaje de programación principal |
-| **Swing** | Built-in | Framework de interfaz gráfica |
-| **PostgreSQL** | 13+ | Sistema de gestión de base de datos |
-| **JDBC** | 42.7.1 | Conector Java-PostgreSQL |
-| **SHA-256** | Built-in | Encriptación de contraseñas |
-```
-### Características de Java Utilizadas
-- ✅ POO (Programación Orientada a Objetos)
-- ✅ JDBC para conexión a BD
-- ✅ Java Swing para GUI
-- ✅ Event Listeners
-- ✅ File I/O para documentos
-- ✅ Exception Handling
-- ✅ Encriptación con MessageDigest
+🛠️ Tecnologías Utilizadas
+TecnologíaVersiónUsoJava11+Lenguaje de programación principalSwingBuilt-inFramework de interfaz gráficaPostgreSQL13+Sistema de gestión de base de datosJDBC42.7.1Conector Java-PostgreSQLSHA-256Built-inEncriptación de contraseñas
+Características de Java Utilizadas
 
----
+✅ POO (Programación Orientada a Objetos)
+✅ JDBC para conexión a BD
+✅ Java Swing para GUI
+✅ Event Listeners
+✅ File I/O para documentos
+✅ Exception Handling
+✅ Encriptación con MessageDigest
 
 ## 🔒 Seguridad
 

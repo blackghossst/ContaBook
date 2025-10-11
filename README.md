@@ -711,9 +711,12 @@ $ LANGUAGE plpgsql;
 ### Capturas de Pantalla de Pruebas
 
 ```
+```
 ## 📸 Capturas de Pantalla
-
+```
+```
 ### Portada de Bienvenida
+```
 ```
 <img width="1230" height="865" alt="image" src="https://github.com/user-attachments/assets/5d6d42ec-84c4-45bf-8a2d-0f86e6c2270b" />
 ```
@@ -721,13 +724,15 @@ $ LANGUAGE plpgsql;
 
 ### Login
 ```
+```
 <img width="986" height="741" alt="image" src="https://github.com/user-attachments/assets/c86d74dc-a1bc-4f32-919e-eb9335f49e49" />
 ```
 ```
 ### Dashboard Principal
 ```
+```
 <img width="1919" height="1020" alt="image" src="https://github.com/user-attachments/assets/f716a2fe-394e-4c10-b12a-31750b523d3a" />
-
+```
 
 ```
 

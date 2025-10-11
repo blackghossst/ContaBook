@@ -736,10 +736,9 @@ $ LANGUAGE plpgsql;
 
 ```
 
----
 
 ## 🛠️ Tecnologías Utilizadas
-
+```
 | Tecnología | Versión | Uso |
 |------------|---------|-----|
 | **Java** | 11+ | Lenguaje de programación principal |
@@ -747,7 +746,7 @@ $ LANGUAGE plpgsql;
 | **PostgreSQL** | 13+ | Sistema de gestión de base de datos |
 | **JDBC** | 42.7.1 | Conector Java-PostgreSQL |
 | **SHA-256** | Built-in | Encriptación de contraseñas |
-
+```
 ### Características de Java Utilizadas
 - ✅ POO (Programación Orientada a Objetos)
 - ✅ JDBC para conexión a BD

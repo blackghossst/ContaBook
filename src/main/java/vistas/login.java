@@ -166,36 +166,7 @@ public class login extends JFrame {
             }
         });
         
-        // Panel para el texto de registro
-        JPanel panelRegistro = new JPanel();
-        panelRegistro.setBackground(new Color(245, 245, 245));
-        panelRegistro.setLayout(new FlowLayout(FlowLayout.CENTER));
-        panelRegistro.setBounds(80, 305, 440, 30);
-        
-        JLabel lblPregunta = new JLabel("¿No tienes una cuenta? ");
-        lblPregunta.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        lblPregunta.setForeground(new Color(100, 100, 100));
-        
-        lblRegistrar = new JLabel("Regístrate aquí");
-        lblRegistrar.setFont(new Font("Segoe UI", Font.ITALIC, 13));
-        lblRegistrar.setForeground(new Color(120, 140, 120));
-        lblRegistrar.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
-        // Efecto hover para el link
-        lblRegistrar.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent evt) {
-                lblRegistrar.setForeground(new Color(100, 120, 100));
-            }
-            public void mouseExited(MouseEvent evt) {
-                lblRegistrar.setForeground(new Color(120, 140, 120));
-            }
-            public void mouseClicked(MouseEvent evt) {
-                abrirRegistro();
-            }
-        });
-        
-        panelRegistro.add(lblPregunta);
-        panelRegistro.add(lblRegistrar);
+
         
         // Agregar componentes al formulario
         panelFormulario.add(panelTituloForm);
@@ -204,7 +175,7 @@ public class login extends JFrame {
         panelFormulario.add(lblPassword);
         panelFormulario.add(txtPassword);
         panelFormulario.add(btnIniciarSesion);
-        panelFormulario.add(panelRegistro);
+
         
         // Centrar el formulario
         JPanel panelCentro = new JPanel();

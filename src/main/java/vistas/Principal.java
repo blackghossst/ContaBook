@@ -351,14 +351,7 @@ public class Principal extends JFrame {
             lblDocumento.setForeground(new Color(0, 120, 0));
         }
     }
-    
-    private void agregarOActualizarPartida() {
-        if (filaEditando >= 0) {
-            actualizarPartida();
-        } else {
-            agregarPartida();
-        }
-    }
+
     
     private void agregarPartida() {
         if (!rolUsuario.equalsIgnoreCase("Usuario") && 
@@ -612,164 +605,29 @@ public void actualizarResumen() {
 }
     
     private void editarPartida(int fila) {
-        // Verificar permisos
-        if (!rolUsuario.equalsIgnoreCase("Admin") && 
-            !rolUsuario.equalsIgnoreCase("Administrador") && 
-            !rolUsuario.equalsIgnoreCase("Contador")) {
-            JOptionPane.showMessageDialog(this,
-                "No tiene permisos para editar partidas",
-                "Acceso denegado",
-                JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        
-        filaEditando = fila;
-        idTransaccionEditando = (int) modeloTabla.getValueAt(fila, 0);
-        
-        // Cargar datos en el formulario
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        
-        try {
-            conn = Conexion.getConexion();
-            
-            String sql = "SELECT * FROM transacciones WHERE idtransaccion = ?";
-            stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, idTransaccionEditando);
-            rs = stmt.executeQuery();
-            
-            if (rs.next()) {
-                txtFecha.setText(rs.getString("fecha"));
-                txtReferencia.setText(rs.getString("referencia"));
-                txtTipo.setText(rs.getString("tipo"));
-                txtCategoria.setText(rs.getString("categoria"));
-                txtDescripcion.setText(rs.getString("descripcion"));
-                txtMonto.setText(String.valueOf(rs.getDouble("monto")));
-                
-                // Cambiar texto del botón
-                btnAgregarPartida.setText("💾 Actualizar Partida");
-                btnAgregarPartida.setBackground(new Color(200, 140, 60));
-                
-                JOptionPane.showMessageDialog(this,
-                    "Datos cargados. Modifique los campos y presione 'Actualizar Partida'",
-                    "Modo Edición",
-                    JOptionPane.INFORMATION_MESSAGE);
-            }
-            
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (rs != null) rs.close();
-                if (stmt != null) stmt.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
+    // Verificar permisos
+    if (!rolUsuario.equalsIgnoreCase("Admin") && 
+        !rolUsuario.equalsIgnoreCase("Administrador") && 
+        !rolUsuario.equalsIgnoreCase("Contador")) {
+        JOptionPane.showMessageDialog(this,
+            "No tiene permisos para editar partidas",
+            "Acceso denegado",
+            JOptionPane.ERROR_MESSAGE);
+        return;
     }
     
-    private void actualizarPartida() {
-        String fecha = txtFecha.getText().trim();
-        String referencia = txtReferencia.getText().trim();
-        String tipo = txtTipo.getText().trim();
-        String categoria = txtCategoria.getText().trim();
-        String descripcion = txtDescripcion.getText().trim();
-        String monto = txtMonto.getText().trim();
-        
-        if (fecha.isEmpty() || tipo.isEmpty() || monto.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                "Por favor, complete al menos: Fecha, Tipo y Monto",
-                "Campos obligatorios",
-                JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        
-        if (!tipo.equalsIgnoreCase("Ingreso") && !tipo.equalsIgnoreCase("Gasto")) {
-            JOptionPane.showMessageDialog(this,
-                "El tipo debe ser 'Ingreso' o 'Gasto'",
-                "Tipo inválido",
-                JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        
-        try {
-            double montoDouble = Double.parseDouble(monto);
-            if (montoDouble <= 0) {
-                JOptionPane.showMessageDialog(this,
-                    "El monto debe ser mayor a cero",
-                    "Monto inválido",
-                    JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this,
-                "El monto debe ser un número válido",
-                "Monto inválido",
-                JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        
-        try {
-            conn = Conexion.getConexion();
-            
-            if (conn == null) {
-                JOptionPane.showMessageDialog(this,
-                    "Error: No se pudo conectar a la base de datos",
-                    "Error de conexión",
-                    JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            
-            String sql = "UPDATE transacciones SET fecha = ?, referencia = ?, tipo = ?, " +
-                        "categoria = ?, descripcion = ?, monto = ? WHERE idtransaccion = ?";
-            
-            stmt = conn.prepareStatement(sql);
-            stmt.setString(1, fecha);
-            stmt.setString(2, referencia);
-            stmt.setString(3, tipo);
-            stmt.setString(4, categoria);
-            stmt.setString(5, descripcion);
-            stmt.setDouble(6, Double.parseDouble(monto));
-            stmt.setInt(7, idTransaccionEditando);
-            
-            int filasActualizadas = stmt.executeUpdate();
-            
-            if (filasActualizadas > 0) {
-                JOptionPane.showMessageDialog(this,
-                    "Partida actualizada exitosamente",
-                    "Éxito",
-                    JOptionPane.INFORMATION_MESSAGE);
-                
-                // Resetear modo edición
-                filaEditando = -1;
-                idTransaccionEditando = -1;
-                btnAgregarPartida.setText("+ Agregar Partida");
-                btnAgregarPartida.setBackground(new Color(140, 160, 140));
-                
-                limpiarFormulario();
-                cargarDatos();
-                actualizarResumen();
-            }
-            
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this,
-                "Error al actualizar la partida:\n" + e.getMessage(),
-                "Error de BD",
-                JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
-            
-        } finally {
-            try {
-                if (stmt != null) stmt.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+    // Obtener el ID de la transacción
+    int idTransaccion = (int) modeloTabla.getValueAt(fila, 0);
+    
+    // Abrir el formulario en modo edición
+    FormularioPartida ff = new FormularioPartida( this, 
+        nombreUsuario, 
+        apellidoUsuario, 
+        rolUsuario, 
+        idTransaccion  // Pasar el ID para edición
+    );
+    ff.setVisible(true);
+}
     
     private void eliminarPartida(int fila) {
         // Pedir contraseña de confirmación

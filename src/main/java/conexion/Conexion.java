@@ -67,7 +67,7 @@ public class Conexion {
         }
     }
     
-    // ========== AGREGA ESTE MÉTODO COMPLETO ==========
+ 
     public static String encriptarPassword(String password) {
         try {
             // Crear instancia de MessageDigest con algoritmo SHA-256

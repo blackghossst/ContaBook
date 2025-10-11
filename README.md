@@ -681,42 +681,33 @@ $ LANGUAGE plpgsql;
 | Subir Imagen | .jpg | 500KB | ✅ Documento guardado | ✅ PASS |
 | Ver documento | - | - | ✅ Archivo abierto | ✅ PASS |
 
-### Mensajes de Prueba
-
-#### Mensajes de Error
-```
+Mensajes de Prueba
+Mensajes de Error
 ❌ "Usuario o contraseña incorrectos"
 ❌ "No tiene permisos para editar partidas"
 ❌ "Las contraseñas no coinciden"
 ❌ "El monto debe ser mayor a cero"
 ❌ "Error: No se pudo conectar a la base de datos"
-```
-
-#### Mensajes de Éxito
-```
+Mensajes de Éxito
 ✅ "¡Bienvenido a ContaBook!"
 ✅ "Partida agregada exitosamente"
 ✅ "Partida actualizada exitosamente"
 ✅ "Partida eliminada exitosamente"
 ✅ "Registro exitoso!"
-```
-
-#### Mensajes de Advertencia
-```
+Mensajes de Advertencia
 ⚠️ "Por favor, complete todos los campos"
 ⚠️ "Debe ingresar su contraseña para eliminar"
 ⚠️ "El tipo debe ser 'Ingreso' o 'Gasto'"
-```
 
 📸 Capturas de Pantalla
 Portada de Bienvenida
-<img width="1229" height="863" alt="image" src="https://github.com/user-attachments/assets/1a67fab1-80df-434a-8b31-b9f7ea8b25a6" />
+<img width="1227" height="864" alt="image" src="https://github.com/user-attachments/assets/d3750d94-6178-47da-9d36-6a2f69e9035f" />
 
 Login
-<img width="982" height="740" alt="image" src="https://github.com/user-attachments/assets/348fc997-7097-4fb2-b7dc-fe0f5b08515c" />
+<img width="978" height="739" alt="image" src="https://github.com/user-attachments/assets/81aa6317-aee9-4f89-9c87-5b685e60e4ed" />
 
 Dashboard Principal
-<img width="1919" height="1019" alt="image" src="https://github.com/user-attachments/assets/32258ce5-2d3e-495b-81db-3d4190754d51" />
+<img width="1919" height="1018" alt="image" src="https://github.com/user-attachments/assets/e7f4abe9-619e-49bc-8170-fe20011805f3" />
 
 
 🛠️ Tecnologías Utilizadas
@@ -731,7 +722,8 @@ Características de Java Utilizadas
 ✅ Exception Handling
 ✅ Encriptación con MessageDigest
 
-## 🔒 Seguridad
+
+🔒 Seguridad
 
 ### Medidas Implementadas
 

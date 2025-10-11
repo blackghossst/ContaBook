@@ -714,16 +714,21 @@ $ LANGUAGE plpgsql;
 ## 📸 Capturas de Pantalla
 
 ### Portada de Bienvenida
+```
 <img width="1230" height="865" alt="image" src="https://github.com/user-attachments/assets/5d6d42ec-84c4-45bf-8a2d-0f86e6c2270b" />
 ```
 ```
 
 ### Login
+```
 <img width="986" height="741" alt="image" src="https://github.com/user-attachments/assets/c86d74dc-a1bc-4f32-919e-eb9335f49e49" />
 ```
 ```
 ### Dashboard Principal
-<img width="1919" height="1018" alt="image" src="https://github.com/user-attachments/assets/3b4f85aa-68b4-4b7f-a43f-15466475b539" />
+```
+<img width="1919" height="1020" alt="image" src="https://github.com/user-attachments/assets/f716a2fe-394e-4c10-b12a-31750b523d3a" />
+
+
 ```
 
 ---

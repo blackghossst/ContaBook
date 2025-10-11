@@ -710,17 +710,24 @@ Dashboard Principal
 <img width="1919" height="1018" alt="image" src="https://github.com/user-attachments/assets/e7f4abe9-619e-49bc-8170-fe20011805f3" />
 
 
-🛠️ Tecnologías Utilizadas
-TecnologíaVersiónUsoJava11+Lenguaje de programación principalSwingBuilt-inFramework de interfaz gráficaPostgreSQL13+Sistema de gestión de base de datosJDBC42.7.1Conector Java-PostgreSQLSHA-256Built-inEncriptación de contraseñas
-Características de Java Utilizadas
+## 🛠️ Tecnologías Utilizadas
 
-✅ POO (Programación Orientada a Objetos)
-✅ JDBC para conexión a BD
-✅ Java Swing para GUI
-✅ Event Listeners
-✅ File I/O para documentos
-✅ Exception Handling
-✅ Encriptación con MessageDigest
+| Tecnología | Versión | Uso |
+|------------|---------|-----|
+| **Java** | 11+ | Lenguaje de programación principal |
+| **Swing** | Built-in | Framework de interfaz gráfica |
+| **PostgreSQL** | 13+ | Sistema de gestión de base de datos |
+| **JDBC** | 42.7.1 | Conector Java-PostgreSQL |
+| **SHA-256** | Built-in | Encriptación de contraseñas |
+
+### Características de Java Utilizadas
+- ✅ POO (Programación Orientada a Objetos)
+- ✅ JDBC para conexión a BD
+- ✅ Java Swing para GUI
+- ✅ Event Listeners
+- ✅ File I/O para documentos
+- ✅ Exception Handling
+- ✅ Encriptación con MessageDigest
 
 
 🔒 Seguridad

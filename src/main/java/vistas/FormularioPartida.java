@@ -440,8 +440,124 @@ public class FormularioPartida extends JDialog {
         }
     }
     
-    private void guardarPartida() {
-        // ... (mantén el código existente de guardarPartida())
-        // El código es el mismo que ya tenías
+private void guardarPartida() {
+    // Verificar permisos
+    if (!rolUsuario.equalsIgnoreCase("Usuario") && 
+        !rolUsuario.equalsIgnoreCase("Admin") && 
+        !rolUsuario.equalsIgnoreCase("Administrador") && 
+        !rolUsuario.equalsIgnoreCase("Contador")) {
+        JOptionPane.showMessageDialog(this,
+            "No tiene permisos para agregar partidas",
+            "Acceso denegado",
+            JOptionPane.ERROR_MESSAGE);
+        return;
     }
+    
+    String fecha = txtFecha.getText().trim();
+    String referencia = txtReferencia.getText().trim();
+    String tipo = txtTipo.getText().trim();
+    String categoria = txtCategoria.getText().trim();
+    String descripcion = txtDescripcion.getText().trim();
+    String monto = txtMonto.getText().trim();
+    
+    // Validaciones
+    if (fecha.isEmpty() || tipo.isEmpty() || descripcion.isEmpty() || monto.isEmpty()) {
+        JOptionPane.showMessageDialog(this,
+            "Por favor, complete todos los campos obligatorios (*)",
+            "Campos obligatorios",
+            JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+    
+    if (!tipo.equalsIgnoreCase("Ingreso") && !tipo.equalsIgnoreCase("Gasto")) {
+        JOptionPane.showMessageDialog(this,
+            "Por favor, seleccione un tipo válido (Ingreso o Gasto)",
+            "Tipo inválido",
+            JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+    
+    try {
+        double montoDouble = Double.parseDouble(monto);
+        if (montoDouble <= 0) {
+            JOptionPane.showMessageDialog(this,
+                "El monto debe ser mayor a cero",
+                "Monto inválido",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+    } catch (NumberFormatException e) {
+        JOptionPane.showMessageDialog(this,
+            "El monto debe ser un número válido",
+            "Monto inválido",
+            JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+    
+    // Guardar en base de datos
+    Connection conn = null;
+    PreparedStatement stmt = null;
+    
+    try {
+        conn = Conexion.getConexion();
+        
+        if (conn == null) {
+            JOptionPane.showMessageDialog(this,
+                "Error: No se pudo conectar a la base de datos",
+                "Error de conexión",
+                JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        String sql = "INSERT INTO transacciones (fecha, referencia, tipo, categoria, descripcion, monto, usuario, documento) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        stmt = conn.prepareStatement(sql);
+        stmt.setString(1, fecha);
+        stmt.setString(2, referencia);
+        stmt.setString(3, tipo);
+        stmt.setString(4, categoria);
+        stmt.setString(5, descripcion);
+        stmt.setDouble(6, Double.parseDouble(monto));
+        stmt.setString(7, usuarioActual);
+        
+        // Guardar documento si existe
+        if (archivoSeleccionado != null) {
+            FileInputStream fis = new FileInputStream(archivoSeleccionado);
+            stmt.setBinaryStream(8, fis, (int) archivoSeleccionado.length());
+        } else {
+            stmt.setNull(8, Types.BINARY);
+        }
+        
+        int filasAfectadas = stmt.executeUpdate();
+        
+        if (filasAfectadas > 0) {
+            JOptionPane.showMessageDialog(this,
+                "✅ Partida guardada exitosamente",
+                "Éxito",
+                JOptionPane.INFORMATION_MESSAGE);
+            
+            // Actualizar la ventana principal
+            ventanaPrincipal.cargarDatos();
+            ventanaPrincipal.actualizarResumen();
+            
+            // Cerrar el formulario
+            dispose();
+        }
+        
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this,
+            "Error al guardar la partida:\n" + e.getMessage(),
+            "Error de BD",
+            JOptionPane.ERROR_MESSAGE);
+        e.printStackTrace();
+        
+    } finally {
+        try {
+            if (stmt != null) stmt.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
 }

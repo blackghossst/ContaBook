@@ -133,6 +133,10 @@ public class Principal extends JFrame {
         
         panelTabs.add(btnPanelPrincipal);
         panelTabs.add(btnPeriodos);
+        btnPeriodos.addActionListener(e -> {
+        Periodos ventanaPeriodos = new Periodos(nombreUsuario, apellidoUsuario, rolUsuario);
+        ventanaPeriodos.setVisible(true);
+});
         panelTabs.add(btnReportes);
         panelTabs.add(btnUsuarios);
         

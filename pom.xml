@@ -18,18 +18,6 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>com.itextpdf</groupId>
-            <artifactId>itext-pdfa</artifactId>
-            <version>5.5.13.4</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>com.itextpdf</groupId>
-            <artifactId>itext-xtra</artifactId>
-            <version>5.5.13.4</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
             <groupId>itext</groupId>
             <artifactId>itext</artifactId>
             <version>1.02b</version>

@@ -616,34 +616,6 @@ WHERE usuario = 'admin';
 ```
 
 ---
-
-## 📝 Roadmap
-
-### ✅ Versión 1.0.0 (Actual)
-- ✅ Sistema de autenticación con encriptación
-- ✅ CRUD completo de partidas contables
-- ✅ Adjuntar documentos (PDF, imágenes, DOC)
-- ✅ Resumen financiero en tiempo real
-- ✅ Gestión de cuentas contables
-- ✅ Filtros y períodos avanzados
-- ✅ Reportes PDF (Balance General y Libro Mayor)
-- ✅ Gestión completa de usuarios
-
-### 🚀 Versión 2.0.0 (Planificado)
-- [ ] Gráficos y estadísticas visuales (JFreeChart)
-- [ ] Exportación a Excel (.xlsx)
-- [ ] Backup automático de base de datos
-- [ ] Modo oscuro / Light mode
-- [ ] Multi-empresa (varias empresas en una BD)
-- [ ] Dashboard con widgets personalizables
-- [ ] Notificaciones y alertas por correo
-- [ ] API REST para integración externa
-- [ ] Módulo de presupuestos
-- [ ] Conciliación bancaria
-- [ ] Reportes personalizados con filtros avanzados
-
----
-
 ## 👨‍💻 Autor
 
 **Nemma**

@@ -1,5 +1,11 @@
 # 🧮 ContaBook - Sistema de Contabilidad Empresarial
-Sistema de registro y gestión de libros de cuentas desarrollado en Java con interfaz gráfica Swing y base de datos PostgreSQL.
+
+![Java](https://img.shields.io/badge/Java-11%2B-orange)
+![Swing](https://img.shields.io/badge/GUI-Swing-blue)
+![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-336791)
+![License](https://img.shields.io/badge/License-MIT-green)
+
+Sistema de escritorio para la gestión integral de registros contables empresariales. Permite a usuarios, contadores y administradores llevar un control detallado de transacciones financieras, generar reportes, gestionar cuentas contables y administrar usuarios.
 
 ---
 
@@ -14,6 +20,8 @@ Sistema de registro y gestión de libros de cuentas desarrollado en Java con int
 - [Roles y Permisos](#-roles-y-permisos)
 - [Capturas de Pantalla](#-capturas-de-pantalla)
 - [Tecnologías Utilizadas](#-tecnologías-utilizadas)
+- [Seguridad](#-seguridad)
+- [Solución de Problemas](#-solución-de-problemas)
 - [Autor](#-autor)
 
 ---
@@ -22,31 +30,58 @@ Sistema de registro y gestión de libros de cuentas desarrollado en Java con int
 
 ### 🔐 Autenticación y Seguridad
 - ✅ Sistema de login con encriptación SHA-256
-- ✅ Registro de nuevos usuarios
+- ✅ Registro de nuevos usuarios con validación
 - ✅ Control de acceso basado en roles (Usuario, Contador, Admin)
 - ✅ Validación de contraseña para operaciones críticas
+- ✅ Arquitectura MVC con LoginController
 
-### 📊 Gestión de Partidas Contables
+### 💰 Gestión de Partidas Contables
 - ✅ Agregar partidas de Ingreso y Gasto
-- ✅ Editar partidas existentes
-- ✅ Eliminar partidas (con confirmación por contraseña)
-- ✅ Adjuntar documentos de comprobación (PDF, imágenes, documentos)
+- ✅ Editar partidas existentes (con permisos)
+- ✅ Eliminar partidas con confirmación por contraseña
+- ✅ Adjuntar documentos de comprobación (PDF, JPG, PNG, DOC)
 - ✅ Visualización de documentos adjuntos
+- ✅ Selección de cuentas desde base de datos
+- ✅ Subcategorías opcionales
+- ✅ Actualización automática de saldos de cuentas
 
-### 💰 Panel Financiero
-- ✅ Resumen en tiempo real de:
-  - Total de Ingresos
-  - Total de Gastos
-  - Balance actual
-- ✅ Contador de transacciones
-- ✅ Actualización automática al agregar/editar/eliminar
+### 📊 Reportes Financieros
+- ✅ **Balance General**: Activos, Pasivos y Patrimonio
+- ✅ **Libro Mayor**: Registro completo de débitos y créditos
+- ✅ Exportación a PDF profesional con iText
+- ✅ Marca de agua con información del usuario generador
+- ✅ Resumen en tiempo real de ingresos, gastos y balance
+
+### 📅 Filtros y Períodos
+- ✅ Filtrado por rango de fechas personalizado
+- ✅ Filtrado por últimos N días (1-365)
+- ✅ Filtrado por año específico
+- ✅ Filtrado por tipo (Ingreso/Gasto)
+- ✅ Vista de todas las transacciones
+- ✅ Resumen financiero del período filtrado
+
+### 💳 Gestión de Cuentas Contables
+- ✅ Crear y visualizar cuentas T
+- ✅ Registro automático de movimientos por cuenta
+- ✅ Cálculo dinámico de saldos
+- ✅ Visualización de débitos y créditos
+- ✅ Actualización automática al agregar transacciones
+
+### 👥 Gestión de Usuarios (Solo Admin)
+- ✅ CRUD completo de usuarios
+- ✅ Asignación de roles
+- ✅ Edición de usuarios con validación
+- ✅ Eliminación con confirmación por contraseña
+- ✅ Control de permisos según rol
 
 ### 🎨 Interfaz Gráfica
-- ✅ Diseño moderno y limpio
-- ✅ Paleta de colores verde suave
+- ✅ Diseño moderno con paleta verde pastel (#8CA08C, #C8DCB4)
+- ✅ Tipografía: Segoe UI
 - ✅ Efectos hover en botones
-- ✅ Formularios en ventanas modales
-- ✅ Tabla interactiva de transacciones
+- ✅ Formularios en ventanas modales (JDialog)
+- ✅ Tabla interactiva con íconos Unicode
+- ✅ Pantalla de portada profesional
+- ✅ Ventanas maximizadas adaptables
 
 ---
 
@@ -63,8 +98,14 @@ Sistema de registro y gestión de libros de cuentas desarrollado en Java con int
 
 ### Dependencias
 
-- **PostgreSQL JDBC Driver**: `postgresql-42.7.1.jar`
+- **PostgreSQL JDBC Driver**: `postgresql-42.7.7.jar`
   - [Descargar aquí](https://jdbc.postgresql.org/download/)
+  
+- **iText PDF**: `itextpdf-5.5.13.3.jar`
+  - [Descargar aquí](https://github.com/itext/itextpdf)
+  
+- **JCalendar**: `jcalendar-tz-1.3.3-4.jar`
+  - [Descargar aquí](https://toedter.com/jcalendar/)
 
 ---
 
@@ -74,7 +115,7 @@ Sistema de registro y gestión de libros de cuentas desarrollado en Java con int
 
 ```bash
 git clone https://github.com/blackghossst/ContaBook.git
-cd contabook
+cd ContaBook
 ```
 
 ### 2. Configurar PostgreSQL
@@ -114,7 +155,8 @@ CREATE TABLE usuario (
     apellido VARCHAR(100) NOT NULL,
     usuario VARCHAR(50) UNIQUE NOT NULL,
     contraseña VARCHAR(255) NOT NULL,
-    rol VARCHAR(50) NOT NULL
+    rol VARCHAR(50) NOT NULL CHECK (rol IN ('Usuario', 'Contador', 'Admin', 'Administrador')),
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Tabla de transacciones
@@ -125,10 +167,17 @@ CREATE TABLE transacciones (
     tipo VARCHAR(20) NOT NULL CHECK (tipo IN ('Ingreso', 'Gasto')),
     categoria VARCHAR(100),
     descripcion TEXT,
-    monto DECIMAL(10, 2) NOT NULL,
+    monto DECIMAL(15, 2) NOT NULL CHECK (monto > 0),
     usuario VARCHAR(200),
     documento BYTEA,
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla de cuentas contables
+CREATE TABLE cuentas (
+    idcuenta SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) UNIQUE NOT NULL,
+    saldo DECIMAL(15, 2) DEFAULT 0.00
 );
 
 -- Índices para optimización
@@ -136,6 +185,8 @@ CREATE INDEX idx_tipo ON transacciones(tipo);
 CREATE INDEX idx_fecha ON transacciones(fecha);
 CREATE INDEX idx_usuario_tabla ON transacciones(usuario);
 CREATE INDEX idx_usuario_login ON usuario(usuario);
+CREATE INDEX idx_categoria ON transacciones(categoria);
+CREATE INDEX idx_fecha_registro ON transacciones(fecha_registro);
 ```
 
 ### 5. Insertar Usuario Administrador Inicial
@@ -146,6 +197,20 @@ INSERT INTO usuario (nombre, apellido, usuario, contraseña, rol)
 VALUES ('Admin', 'Sistema', 'admin', 
         '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 
         'Admin');
+
+-- Usuarios de prueba (contraseña: admin123)
+INSERT INTO usuario (nombre, apellido, usuario, contraseña, rol) VALUES
+('Juan', 'Pérez', 'jperez', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'Usuario'),
+('María', 'García', 'mgarcia', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'Contador');
+
+-- Cuentas contables de ejemplo
+INSERT INTO cuentas (nombre, saldo) VALUES
+('Caja', 0.00),
+('Bancos', 0.00),
+('Inventario', 0.00),
+('Proveedores', 0.00),
+('Ventas', 0.00),
+('Gastos Operativos', 0.00);
 ```
 
 ### 6. Configurar Conexión en el Proyecto
@@ -158,53 +223,72 @@ private static final String USER = "postgres";  // Tu usuario de PostgreSQL
 private static final String PASSWORD = "tu_contraseña";  // Tu contraseña
 ```
 
-### 7. Agregar el Driver PostgreSQL
+### 7. Agregar las Dependencias
 
 **En NetBeans:**
-1. Click derecho en **Libraries/Dependencies**
+1. Click derecho en **Dependencies**
 2. **Add JAR/Folder**
-3. Selecciona `postgresql-42.7.1.jar`
+3. Selecciona los JARs:
+   - `postgresql-42.7.7.jar`
+   - `itextpdf-5.5.13.3.jar`
+   - `jcalendar-tz-1.3.3-4.jar`
 
 **En IntelliJ IDEA:**
 1. File → Project Structure → Libraries
 2. Click en `+` → Java
-3. Selecciona `postgresql-42.7.1.jar`
+3. Selecciona todos los JARs
 
 ### 8. Compilar y Ejecutar
 
+Ejecuta la clase principal: `vistas.PortadaContaBook`
+
+O desde terminal:
 ```bash
-# Compilar
-javac -cp .:postgresql-42.7.1.jar vistas/*.java conexion/*.java
-
-# Ejecutar
-java -cp .:postgresql-42.7.1.jar vistas.PortadaContaBook
+java -cp .:lib/* vistas.PortadaContaBook
 ```
-
-O simplemente ejecuta desde tu IDE:
-- **Clase principal**: `vistas.PortadaContaBook`
 
 ---
 
 ## 📁 Estructura del Proyecto
 
 ```
-ContaBook/
-├── src/
-│   ├── vistas/
-│   │   ├── PortadaContaBook.java      # Pantalla de bienvenida
-│   │   ├── login.java                  # Sistema de autenticación
-│   │   ├── Registro.java               # Registro de usuarios
-│   │   ├── Principal.java              # Dashboard principal
-│   │   └── FormularioPartida.java      # Formulario de partidas
+ContaBook/ [main]
+├── Source Packages
+│   ├── Controlador/
+│   │   ├── LoginController.java        # Controlador MVC del login
+│   │   └── RegistroControlador.java    # Controlador del registro
 │   │
-│   └── conexion/
-│       └── Conexion.java               # Gestión de conexión a BD
+│   ├── com.mycompany.contabook/
+│   │   └── ContaBook.java              # Clase principal del proyecto
+│   │
+│   ├── conexion/
+│   │   └── Conexion.java               # Gestión de conexión a BD y encriptación SHA-256
+│   │
+│   ├── models/
+│   │   └── [Modelos de datos]          # Clases de modelo (si aplica)
+│   │
+│   └── vistas/
+│       ├── FormularioPartida.java      # Formulario modal de transacciones (CRUD)
+│       ├── GeneradorPDF.java           # Generador de reportes PDF (Balance/Libro Mayor)
+│       ├── LoginVista.java             # Vista de login con arquitectura MVC
+│       ├── Periodos.java               # Módulo de filtros y períodos contables
+│       ├── PortadaContaBook.java       # Pantalla de bienvenida del sistema
+│       ├── Principal.java              # Dashboard principal y navegación
+│       ├── Registro.java               # Formulario de registro de usuarios
+│       ├── Usuarios.java               # Gestión completa de usuarios (Admin)
+│       └── login.java                  # Vista alternativa de login
 │
-├── lib/
-│   └── postgresql-42.7.1.jar           # Driver de PostgreSQL
+├── Test Packages/
+│   └── [Pruebas unitarias]
 │
-├── README.md                            # Este archivo
-└── LICENSE                              # Licencia del proyecto
+├── Dependencies/
+│   ├── itextpdf-5.5.13.3.jar          # Generación de PDFs
+│   ├── jcalendar-tz-1.3.3-4.jar       # Selector de fechas (JDateChooser)
+│   └── postgresql-42.7.7.jar          # Driver JDBC PostgreSQL
+│
+├── Runtime Dependencies/
+├── Java Dependencies/
+└── Project Files/
 ```
 
 ---
@@ -213,131 +297,38 @@ ContaBook/
 
 ### Tabla: `usuario`
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `idusuario` | SERIAL | ID único del usuario |
-| `nombre` | VARCHAR(100) | Nombre del usuario |
-| `apellido` | VARCHAR(100) | Apellido del usuario |
-| `usuario` | VARCHAR(50) | Nombre de usuario (único) |
-| `contraseña` | VARCHAR(255) | Contraseña encriptada (SHA-256) |
-| `rol` | VARCHAR(50) | Rol del usuario (Usuario/Contador/Admin) |
+| Campo | Tipo | Restricción | Descripción |
+|-------|------|-------------|-------------|
+| idusuario | SERIAL | PRIMARY KEY | ID único autoincremental |
+| nombre | VARCHAR(100) | NOT NULL | Nombre del usuario |
+| apellido | VARCHAR(100) | NOT NULL | Apellido del usuario |
+| usuario | VARCHAR(50) | UNIQUE, NOT NULL | Nombre de usuario único |
+| contraseña | VARCHAR(255) | NOT NULL | Contraseña encriptada SHA-256 |
+| rol | VARCHAR(50) | NOT NULL, CHECK | Usuario/Contador/Admin |
+| fecha_creacion | TIMESTAMP | DEFAULT NOW() | Fecha de registro |
 
 ### Tabla: `transacciones`
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `idtransaccion` | SERIAL | ID único de la transacción |
-| `fecha` | VARCHAR(20) | Fecha de la transacción |
-| `referencia` | VARCHAR(100) | Referencia o número de documento |
-| `tipo` | VARCHAR(20) | Tipo (Ingreso o Gasto) |
-| `categoria` | VARCHAR(100) | Categoría de la transacción |
-| `descripcion` | TEXT | Descripción detallada |
-| `monto` | DECIMAL(10,2) | Monto de la transacción |
-| `usuario` | VARCHAR(200) | Usuario que creó la transacción |
-| `documento` | BYTEA | Archivo adjunto (opcional) |
-| `fecha_registro` | TIMESTAMP | Fecha y hora de registro |
+| Campo | Tipo | Restricción | Descripción |
+|-------|------|-------------|-------------|
+| idtransaccion | SERIAL | PRIMARY KEY | ID único autoincremental |
+| fecha | VARCHAR(20) | NOT NULL | Fecha formato DD/MM/YYYY |
+| referencia | VARCHAR(100) | NULL | Número de referencia |
+| tipo | VARCHAR(20) | NOT NULL, CHECK | 'Ingreso' o 'Gasto' |
+| categoria | VARCHAR(100) | NULL | Cuenta contable seleccionada |
+| descripcion | TEXT | NULL | Descripción detallada |
+| monto | DECIMAL(15,2) | NOT NULL, CHECK > 0 | Monto en US$ |
+| usuario | VARCHAR(200) | NULL | Usuario que registró |
+| documento | BYTEA | NULL | Archivo adjunto en binario |
+| fecha_registro | TIMESTAMP | DEFAULT NOW() | Timestamp de creación |
 
----
+### Tabla: `cuentas`
 
-## 🚀 Uso del Sistema
-
-### 1️⃣ Inicio de Sesión
-
-1. Ejecuta la aplicación
-2. Se abrirá la **Portada de ContaBook**
-3. Click en **"INGRESAR AL SISTEMA"**
-4. Ingresa tus credenciales:
-   - **Usuario**: `admin`
-   - **Contraseña**: `admin123`
-5. Click en **"Iniciar Sesión"**
-
-### 2️⃣ Registrar Nuevo Usuario
-
-1. En el login, click en **"Regístrate aquí"**
-2. Completa el formulario:
-   - Nombre
-   - Apellido
-   - Usuario (único)
-   - Rol (Usuario/Contador/Admin)
-   - Contraseña
-   - Confirmar contraseña
-3. Click en **"Registrarse"**
-
-### 3️⃣ Agregar una Partida Contable
-
-1. En el Dashboard, click en **"+ Nueva Partida Contable"**
-2. Se abrirá el formulario modal
-3. Completa los campos:
-   - **Fecha**: Automática o manual
-   - **Tipo**: Ingreso o Gasto
-   - **Categoría**: Ej. Ventas, Servicios, Materia Prima
-   - **Descripción**: Detalle de la transacción
-   - **Monto**: Cantidad en dólares
-   - **Documento** (opcional): Adjuntar comprobante
-4. Click en **"💾 Guardar Partida"**
-
-### 4️⃣ Editar una Partida
-
-1. En la tabla, click en el icono **✏️** (Editar)
-2. Los datos se cargarán en el formulario
-3. Modifica los campos necesarios
-4. Click en **"💾 Actualizar Partida"**
-
-### 5️⃣ Eliminar una Partida
-
-1. En la tabla, click en el icono **🗑️** (Eliminar)
-2. Ingresa tu contraseña para confirmar
-3. Confirma la eliminación
-4. La partida será eliminada permanentemente
-
-### 6️⃣ Ver Documento Adjunto
-
-1. En la tabla, click en el icono **📄** (si existe documento)
-2. El documento se abrirá automáticamente
-
----
-
-## 👥 Roles y Permisos
-
-### 🟢 Usuario (Usuario Normal)
-
-| Permiso | Acceso |
-|---------|--------|
-| Ver Dashboard | ✅ Sí |
-| Agregar Partidas | ✅ Sí |
-| Editar Partidas | ❌ No |
-| Eliminar Partidas | ❌ No |
-| Ver Períodos | ❌ No |
-| Ver Reportes | ❌ No |
-| Gestionar Usuarios | ❌ No |
-
-### 🟡 Contador
-
-| Permiso | Acceso |
-|---------|--------|
-| Ver Dashboard | ✅ Sí |
-| Agregar Partidas | ✅ Sí |
-| Editar Partidas | ✅ Sí |
-| Eliminar Partidas | ✅ Sí (con contraseña) |
-| Ver Períodos | ✅ Sí |
-| Ver Reportes | ✅ Sí |
-| Gestionar Usuarios | ❌ No |
-
-### 🔴 Administrador (Admin)
-
-| Permiso | Acceso |
-|---------|--------|
-| Ver Dashboard | ✅ Sí |
-| Agregar Partidas | ✅ Sí |
-| Editar Partidas | ✅ Sí |
-| Eliminar Partidas | ✅ Sí (con contraseña) |
-| Ver Períodos | ✅ Sí |
-| Ver Reportes | ✅ Sí |
-| Gestionar Usuarios | ✅ Sí |
-
----
-
-## 🗄️ Esquema de Base de Datos
+| Campo | Tipo | Restricción | Descripción |
+|-------|------|-------------|-------------|
+| idcuenta | SERIAL | PRIMARY KEY | ID único |
+| nombre | VARCHAR(100) | UNIQUE, NOT NULL | Nombre de la cuenta |
+| saldo | DECIMAL(15,2) | DEFAULT 0.00 | Saldo actual |
 
 ### Diagrama Entidad-Relación
 
@@ -349,409 +340,204 @@ ContaBook/
 │ nombre              │    1    │ fecha                │
 │ apellido            │────┐    │ referencia           │
 │ usuario (UNIQUE)    │    │    │ tipo                 │
-│ contraseña          │    │    │ categoria            │
-│ rol                 │    │    │ descripcion          │
-└─────────────────────┘    │    │ monto                │
-                           └───→│ usuario (FK)         │
+│ contraseña          │    │    │ categoria (FK)       │
+│ rol                 │    └───→│ usuario              │
+│ fecha_creacion      │         │ descripcion          │
+└─────────────────────┘         │ monto                │
                                 │ documento            │
                                 │ fecha_registro       │
-                                └──────────────────────┘
-```
-
-### Relaciones
-
-- **Usuario → Transacciones**: Un usuario puede crear múltiples transacciones (1:N)
-- **Tipo de relación**: Uno a Muchos
-- **Clave foránea**: `transacciones.usuario` referencia `usuario.nombre + apellido`
-
-### Tipos de Datos
-
-#### Tabla USUARIO
-| Campo | Tipo | Restricción | Descripción |
-|-------|------|-------------|-------------|
-| idusuario | SERIAL | PRIMARY KEY | Identificador único autoincremental |
-| nombre | VARCHAR(100) | NOT NULL | Nombre del usuario |
-| apellido | VARCHAR(100) | NOT NULL | Apellido del usuario |
-| usuario | VARCHAR(50) | UNIQUE, NOT NULL | Nombre de usuario único |
-| contraseña | VARCHAR(255) | NOT NULL | Contraseña encriptada SHA-256 |
-| rol | VARCHAR(50) | NOT NULL | Rol: Usuario/Contador/Admin |
-
-#### Tabla TRANSACCIONES
-| Campo | Tipo | Restricción | Descripción |
-|-------|------|-------------|-------------|
-| idtransaccion | SERIAL | PRIMARY KEY | Identificador único autoincremental |
-| fecha | VARCHAR(20) | NOT NULL | Fecha de la transacción (DD/MM/YYYY) |
-| referencia | VARCHAR(100) | NULL | Número de referencia o documento |
-| tipo | VARCHAR(20) | NOT NULL, CHECK | 'Ingreso' o 'Gasto' |
-| categoria | VARCHAR(100) | NULL | Categoría de la transacción |
-| descripcion | TEXT | NULL | Descripción detallada |
-| monto | DECIMAL(10,2) | NOT NULL | Monto en dólares |
-| usuario | VARCHAR(200) | NULL | Usuario que registró |
-| documento | BYTEA | NULL | Archivo adjunto en binario |
-| fecha_registro | TIMESTAMP | DEFAULT NOW() | Fecha y hora de creación |
-
----
-
-## 📊 Libro Diario vs Libro Mayor
-
-### 📖 Libro Diario (Implementado)
-
-El **Libro Diario** registra todas las transacciones en orden cronológico:
-
-```sql
--- Vista de Libro Diario
-SELECT 
-    fecha,
-    referencia,
-    tipo,
-    categoria,
-    descripcion,
-    monto,
-    usuario
-FROM transacciones
-ORDER BY fecha_registro DESC;
-```
-
-**Ejemplo de salida:**
-
-| Fecha | Ref | Tipo | Categoría | Descripción | Monto |
-|-------|-----|------|-----------|-------------|-------|
-| 14/12/2024 | 001 | Ingreso | Ventas | Venta productos Q1 | +2800.00 |
-| 12/12/2024 | 002 | Gasto | Materia Prima | Compra materiales | -800.00 |
-| 12/12/2024 | 003 | Ingreso | Servicios | Consultoría ABC | +1200.00 |
-
-### 📚 Libro Mayor (Consulta SQL)
-
-El **Libro Mayor** agrupa las transacciones por categoría:
-
-```sql
--- Vista de Libro Mayor por Categoría
-CREATE OR REPLACE VIEW libro_mayor AS
-SELECT 
-    categoria,
-    tipo,
-    COUNT(*) as total_movimientos,
-    SUM(CASE WHEN tipo = 'Ingreso' THEN monto ELSE 0 END) as total_ingresos,
-    SUM(CASE WHEN tipo = 'Gasto' THEN monto ELSE 0 END) as total_gastos,
-    SUM(CASE WHEN tipo = 'Ingreso' THEN monto ELSE -monto END) as saldo
-FROM transacciones
-GROUP BY categoria, tipo
-ORDER BY categoria;
-
--- Consultar Libro Mayor
-SELECT * FROM libro_mayor;
-```
-
-**Ejemplo de salida:**
-
-| Categoría | Tipo | Movimientos | Ingresos | Gastos | Saldo |
-|-----------|------|-------------|----------|--------|-------|
-| Ventas | Ingreso | 15 | $45,000 | $0 | +$45,000 |
-| Materia Prima | Gasto | 8 | $0 | $12,000 | -$12,000 |
-| Servicios | Ingreso | 5 | $8,000 | $0 | +$8,000 |
-| Nómina | Gasto | 3 | $0 | $9,000 | -$9,000 |
-
-### 🔍 Consultas Adicionales del Libro Mayor
-
-```sql
--- Resumen por mes
-SELECT 
-    DATE_TRUNC('month', fecha_registro) as mes,
-    tipo,
-    SUM(monto) as total
-FROM transacciones
-GROUP BY mes, tipo
-ORDER BY mes DESC;
-
--- Balance por período
-SELECT 
-    DATE_TRUNC('month', fecha_registro) as periodo,
-    SUM(CASE WHEN tipo = 'Ingreso' THEN monto ELSE 0 END) as ingresos,
-    SUM(CASE WHEN tipo = 'Gasto' THEN monto ELSE 0 END) as gastos,
-    SUM(CASE WHEN tipo = 'Ingreso' THEN monto ELSE -monto END) as balance
-FROM transacciones
-GROUP BY periodo
-ORDER BY periodo DESC;
+       ┌────────────────────────┴──────────────────────┘
+       │
+       │ N:1
+       ▼
+┌──────────────────────┐
+│       CUENTAS        │
+├──────────────────────┤
+│ idcuenta (PK)        │
+│ nombre (UNIQUE)      │
+│ saldo                │
+└──────────────────────┘
 ```
 
 ---
 
-## 📦 Scripts SQL Completos
+## 🚀 Uso del Sistema
 
-### script_database.sql
+### 1️⃣ Inicio de Sesión
 
-Archivo completo para crear la base de datos:
+1. Ejecuta `PortadaContaBook.java`
+2. Click en **"INGRESAR AL SISTEMA"**
+3. Ingresa credenciales:
+   - **Usuario**: `admin`
+   - **Contraseña**: `admin123`
+4. Click en **"Iniciar Sesión"** o presiona Enter
 
-```sql
--- ============================================
--- SCRIPT DE CREACIÓN DE BASE DE DATOS
--- ContaBook - Sistema de Contabilidad
--- Versión: 1.0.0
--- Base de Datos: PostgreSQL 13+
--- ============================================
+### 2️⃣ Agregar una Partida Contable
 
--- Crear base de datos
-CREATE DATABASE Contabook
-    WITH 
-    OWNER = postgres
-    ENCODING = 'UTF8'
-    LC_COLLATE = 'en_US.UTF-8'
-    LC_CTYPE = 'en_US.UTF-8'
-    TABLESPACE = pg_default
-    CONNECTION LIMIT = -1;
+1. En el Dashboard, click en **"+ Nueva Partida Contable"**
+2. Se abrirá el formulario modal (`FormularioPartida.java`)
+3. Completa los campos:
+   - **Fecha**: Se autocompleta con fecha actual
+   - **Referencia**: Opcional (ej: #001, FAC-2024-001)
+   - **Tipo**: Selecciona "Ingreso" o "Gasto"
+   - **Cuenta**: Selecciona de la lista desplegable (desde BD)
+   - **Subcategoría**: Opcional (se concatena con la cuenta)
+   - **Descripción**: Detalle de la transacción
+   - **Monto (US$)**: Cantidad (solo números positivos)
+   - **Documento**: Opcional (PDF, JPG, PNG, DOC máx 5MB)
+4. Click en **"💾 Guardar Partida"**
 
--- Conectar a la base de datos
-\c Contabook
+### 3️⃣ Editar una Partida
 
--- ============================================
--- TABLA: usuario
--- Descripción: Almacena información de usuarios del sistema
--- ============================================
-CREATE TABLE IF NOT EXISTS usuario (
-    idusuario SERIAL PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    apellido VARCHAR(100) NOT NULL,
-    usuario VARCHAR(50) UNIQUE NOT NULL,
-    contraseña VARCHAR(255) NOT NULL,
-    rol VARCHAR(50) NOT NULL CHECK (rol IN ('Usuario', 'Contador', 'Admin', 'Administrador')),
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+1. En la tabla, click en **✏️** (Editar)
+2. Solo **Contador** y **Admin** pueden editar
+3. Se abrirá el formulario con datos precargados
+4. Modifica los campos necesarios
+5. Click en **"💾 Actualizar Partida"**
+6. El saldo de la cuenta se actualiza automáticamente
 
--- ============================================
--- TABLA: transacciones
--- Descripción: Registro de todas las operaciones contables
--- ============================================
-CREATE TABLE IF NOT EXISTS transacciones (
-    idtransaccion SERIAL PRIMARY KEY,
-    fecha VARCHAR(20) NOT NULL,
-    referencia VARCHAR(100),
-    tipo VARCHAR(20) NOT NULL CHECK (tipo IN ('Ingreso', 'Gasto')),
-    categoria VARCHAR(100),
-    descripcion TEXT,
-    monto DECIMAL(10, 2) NOT NULL CHECK (monto > 0),
-    usuario VARCHAR(200),
-    documento BYTEA,
-    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+### 4️⃣ Eliminar una Partida
 
--- ============================================
--- ÍNDICES PARA OPTIMIZACIÓN
--- ============================================
-CREATE INDEX idx_tipo ON transacciones(tipo);
-CREATE INDEX idx_fecha ON transacciones(fecha);
-CREATE INDEX idx_usuario_tabla ON transacciones(usuario);
-CREATE INDEX idx_usuario_login ON usuario(usuario);
-CREATE INDEX idx_categoria ON transacciones(categoria);
-CREATE INDEX idx_fecha_registro ON transacciones(fecha_registro);
+1. En la tabla, click en **🗑️** (Eliminar)
+2. Ingresa tu contraseña para confirmar
+3. Confirma la eliminación
+4. La partida será eliminada permanentemente
 
--- ============================================
--- DATOS INICIALES
--- ============================================
+### 5️⃣ Ver Documento Adjunto
 
--- Usuario Administrador por defecto
--- Usuario: admin
--- Contraseña: admin123 (SHA-256)
-INSERT INTO usuario (nombre, apellido, usuario, contraseña, rol) 
-VALUES (
-    'Admin', 
-    'Sistema', 
-    'admin', 
-    '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 
-    'Admin'
-) ON CONFLICT (usuario) DO NOTHING;
+1. En la tabla, click en **📄** (Documento)
+2. El documento se abrirá con el visor predeterminado
+3. Si no hay documento, aparece: "Esta transacción no tiene documento adjunto"
 
--- Usuarios de prueba
-INSERT INTO usuario (nombre, apellido, usuario, contraseña, rol) VALUES
-('Juan', 'Pérez', 'jperez', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'Usuario'),
-('María', 'García', 'mgarcia', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'Contador')
-ON CONFLICT (usuario) DO NOTHING;
+### 6️⃣ Filtrar por Períodos
 
--- Transacciones de ejemplo
-INSERT INTO transacciones (fecha, referencia, tipo, categoria, descripcion, monto, usuario) VALUES
-('14/12/2024', '001', 'Ingreso', 'Ventas', 'Venta de productos enero - primera quincena', 2800.00, 'Admin Sistema'),
-('12/12/2024', '002', 'Gasto', 'Materia Prima', 'Compra de materiales para producción', 800.00, 'Admin Sistema'),
-('12/12/2024', '003', 'Ingreso', 'Servicios', 'Consultoría técnica cliente ABC', 1200.00, 'Admin Sistema'),
-('11/12/2024', '004', 'Gasto', 'Nómina', 'Pago de sueldos diciembre', 3000.00, 'Admin Sistema'),
-('10/12/2024', '005', 'Ingreso', 'Ventas', 'Venta online productos varios', 1500.00, 'Admin Sistema')
-ON CONFLICT DO NOTHING;
+1. Click en pestaña **"Períodos"**
+2. Selecciona tipo de filtro:
+   - Ver todas las transacciones
+   - Filtrar por rango de fechas (JDateChooser)
+   - Filtrar por últimos N días (1-365)
+   - Filtrar por año (últimos 10 años)
+   - Filtrar por tipo (Ingreso/Gasto/Todos)
+3. Click en **"🔍 Aplicar Filtro"**
+4. Ver resumen con totales actualizados
 
--- ============================================
--- FUNCIONES ÚTILES
--- ============================================
+### 7️⃣ Generar Reportes
 
--- Función: Obtener balance total
-CREATE OR REPLACE FUNCTION obtener_balance_total()
-RETURNS DECIMAL(10,2) AS $
-DECLARE
-    balance DECIMAL(10,2);
-BEGIN
-    SELECT 
-        SUM(CASE WHEN tipo = 'Ingreso' THEN monto ELSE -monto END)
-    INTO balance
-    FROM transacciones;
-    
-    RETURN COALESCE(balance, 0);
-END;
-$ LANGUAGE plpgsql;
+1. Click en pestaña **"Reportes"**
+2. Selecciona:
+   - **Balance General**: Activos, Pasivos, Patrimonio
+   - **Libro Mayor**: Débitos, Créditos, Saldo acumulado
+3. Click en **"📄 Descargar PDF"**
+4. Elige ubicación y nombre del archivo
+5. El PDF se genera con marca de agua y timestamp
 
--- Función: Obtener transacciones por período
-CREATE OR REPLACE FUNCTION obtener_transacciones_periodo(
-    fecha_inicio DATE,
-    fecha_fin DATE
-)
-RETURNS TABLE (
-    id INTEGER,
-    fecha VARCHAR(20),
-    tipo VARCHAR(20),
-    categoria VARCHAR(100),
-    monto DECIMAL(10,2)
-) AS $
-BEGIN
-    RETURN QUERY
-    SELECT 
-        idtransaccion,
-        t.fecha,
-        t.tipo,
-        t.categoria,
-        t.monto
-    FROM transacciones t
-    WHERE t.fecha_registro BETWEEN fecha_inicio AND fecha_fin
-    ORDER BY t.fecha_registro DESC;
-END;
-$ LANGUAGE plpgsql;
+### 8️⃣ Gestionar Cuentas Contables
 
--- ============================================
--- PERMISOS (Opcional)
--- ============================================
--- GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO contabook_user;
--- GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO contabook_user;
+1. Click en pestaña **"Cuentas"**
+2. **Agregar nueva cuenta**:
+   - Escribe nombre de la cuenta
+   - Click en "Agregar Cuenta"
+3. **Ver Cuentas T**:
+   - Visualiza movimientos (débitos/créditos)
+   - Ve el saldo actual de cada cuenta
+4. Las cuentas se actualizan automáticamente al registrar transacciones
 
--- ============================================
--- FIN DEL SCRIPT
--- ============================================
-```
+### 9️⃣ Gestionar Usuarios (Solo Admin)
+
+1. Click en pestaña **"Usuarios"**
+2. **Agregar usuario**:
+   - Click en "+ Nuevo Usuario"
+   - Completa formulario
+   - Asigna rol (Usuario/Contador/Admin)
+3. **Editar usuario**:
+   - Click en ✏️
+   - Solo Admin puede cambiar roles
+4. **Eliminar usuario**:
+   - Click en 🗑️
+   - Confirma con contraseña
 
 ---
 
-## 🧪 Pruebas y Evidencias
+## 👥 Roles y Permisos
 
-### Casos de Prueba Documentados
+| Funcionalidad | Usuario | Contador | Admin |
+|--------------|---------|----------|-------|
+| **Agregar partidas** | ✅ Sí | ✅ Sí | ✅ Sí |
+| **Editar partidas** | ❌ No | ✅ Sí | ✅ Sí |
+| **Eliminar partidas** | ❌ No | ✅ Sí (con contraseña) | ✅ Sí (con contraseña) |
+| **Ver Dashboard** | ✅ Sí | ✅ Sí | ✅ Sí |
+| **Períodos** | ❌ No | ✅ Sí | ✅ Sí |
+| **Reportes** | ❌ No | ✅ Sí | ✅ Sí |
+| **Cuentas** | ❌ No | ✅ Sí | ✅ Sí |
+| **Gestionar usuarios** | ❌ No | ❌ No | ✅ Sí |
 
-#### 1. Prueba de Login
+---
 
-**Objetivo**: Verificar autenticación de usuarios
+## 📸 Capturas de Pantalla
 
-| Caso | Usuario | Contraseña | Resultado Esperado | Resultado Real |
-|------|---------|------------|-------------------|----------------|
-| Login válido | admin | admin123 | ✅ Acceso concedido | ✅ PASS |
-| Login inválido | admin | wrong123 | ❌ Error de autenticación | ✅ PASS |
-| Campos vacíos | (vacío) | (vacío) | ⚠️ Validación de campos | ✅ PASS |
+### Portada de Bienvenida
+![Portada](https://github.com/user-attachments/assets/d3750d94-6178-47da-9d36-6a2f69e9035f)
 
-#### 2. Prueba de Registro
+### Login
+![Login](https://github.com/user-attachments/assets/81aa6317-aee9-4f89-9c87-5b685e60e4ed)
 
-| Caso | Datos | Resultado Esperado | Resultado Real |
-|------|-------|-------------------|----------------|
-| Registro completo | Todos los campos llenos | ✅ Usuario creado | ✅ PASS |
-| Usuario duplicado | Usuario existente | ❌ Error: usuario ya existe | ✅ PASS |
-| Contraseñas no coinciden | Pass ≠ Confirm | ❌ Error de validación | ✅ PASS |
+### Dashboard Principal
+![Dashboard](https://github.com/user-attachments/assets/e7f4abe9-619e-49bc-8170-fe20011805f3)
 
-#### 3. Prueba de Partidas
-
-| Operación | Tipo | Monto | Resultado Esperado | Resultado Real |
-|-----------|------|-------|-------------------|----------------|
-| Agregar Ingreso | Ingreso | $1000 | ✅ Partida creada | ✅ PASS |
-| Agregar Gasto | Gasto | $500 | ✅ Partida creada | ✅ PASS |
-| Editar partida | Ingreso | $1500 | ✅ Partida actualizada | ✅ PASS |
-| Eliminar con contraseña | - | - | ✅ Partida eliminada | ✅ PASS |
-| Eliminar sin contraseña | - | - | ❌ Acceso denegado | ✅ PASS |
-
-#### 4. Prueba de Permisos
-
-| Rol | Agregar | Editar | Eliminar | Ver Reportes | Gestionar Usuarios |
-|-----|---------|--------|----------|--------------|-------------------|
-| Usuario | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Contador | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Admin | ✅ | ✅ | ✅ | ✅ | ✅ |
-
-#### 5. Prueba de Documentos
-
-| Operación | Tipo Archivo | Tamaño | Resultado Esperado | Resultado Real |
-|-----------|--------------|--------|-------------------|----------------|
-| Subir PDF | .pdf | 2MB | ✅ Documento guardado | ✅ PASS |
-| Subir Imagen | .jpg | 500KB | ✅ Documento guardado | ✅ PASS |
-| Ver documento | - | - | ✅ Archivo abierto | ✅ PASS |
-
-Mensajes de Prueba
-
-Mensajes de Error
-❌ "Usuario o contraseña incorrectos"
-❌ "No tiene permisos para editar partidas"
-❌ "Las contraseñas no coinciden"
-❌ "El monto debe ser mayor a cero"
-❌ "Error: No se pudo conectar a la base de datos"
-
-Mensajes de Éxito
-✅ "¡Bienvenido a ContaBook!"
-✅ "Partida agregada exitosamente"
-✅ "Partida actualizada exitosamente"
-✅ "Partida eliminada exitosamente"
-✅ "Registro exitoso!"
-
-Mensajes de Advertencia
-⚠️ "Por favor, complete todos los campos"
-⚠️ "Debe ingresar su contraseña para eliminar"
-⚠️ "El tipo debe ser 'Ingreso' o 'Gasto'"
-
-📸 Capturas de Pantalla
-Portada de Bienvenida
-<img width="1227" height="864" alt="image" src="https://github.com/user-attachments/assets/d3750d94-6178-47da-9d36-6a2f69e9035f" />
-
-Login
-<img width="978" height="739" alt="image" src="https://github.com/user-attachments/assets/81aa6317-aee9-4f89-9c87-5b685e60e4ed" />
-
-Dashboard Principal
-<img width="1919" height="1018" alt="image" src="https://github.com/user-attachments/assets/e7f4abe9-619e-49bc-8170-fe20011805f3" />
-
+---
 
 ## 🛠️ Tecnologías Utilizadas
 
 | Tecnología | Versión | Uso |
 |------------|---------|-----|
 | **Java** | 11+ | Lenguaje de programación principal |
-| **Swing** | Built-in | Framework de interfaz gráfica |
-| **PostgreSQL** | 13+ | Sistema de gestión de base de datos |
-| **JDBC** | 42.7.1 | Conector Java-PostgreSQL |
-| **SHA-256** | Built-in | Encriptación de contraseñas |
+| **Swing** | Built-in | Framework de interfaz gráfica (JFrame, JDialog, JTable) |
+| **PostgreSQL** | 13+ | Sistema de gestión de base de datos relacional |
+| **JDBC** | 42.7.7 | Conector Java-PostgreSQL |
+| **iText** | 5.5.13.3 | Generación de documentos PDF |
+| **JCalendar** | 1.3.3-4 | Selector de fechas (JDateChooser) |
+| **SHA-256** | Built-in | Encriptación de contraseñas (MessageDigest) |
 
 ### Características de Java Utilizadas
-- ✅ POO (Programación Orientada a Objetos)
-- ✅ JDBC para conexión a BD
-- ✅ Java Swing para GUI
-- ✅ Event Listeners
-- ✅ File I/O para documentos
-- ✅ Exception Handling
-- ✅ Encriptación con MessageDigest
+- ✅ **POO**: Herencia, Encapsulación, Polimorfismo
+- ✅ **JDBC**: PreparedStatement, ResultSet, Conexiones
+- ✅ **Java Swing**: JFrame, JDialog, JTable, JDateChooser
+- ✅ **Event Listeners**: ActionListener, MouseAdapter
+- ✅ **File I/O**: FileInputStream, FileOutputStream, ByteArrays
+- ✅ **Exception Handling**: try-catch-finally, SQLException
+- ✅ **Encriptación**: MessageDigest (SHA-256)
+- ✅ **MVC**: Separación de Controlador y Vista
 
+---
 
-🔒 Seguridad
+## 🔒 Seguridad
 
 ### Medidas Implementadas
 
 1. **Encriptación de Contraseñas**
    - Algoritmo: SHA-256
+   - Método: `Conexion.encriptarPassword()`
    - No se almacenan contraseñas en texto plano
 
 2. **Validación de Permisos**
    - Control de acceso basado en roles
    - Verificación en cada operación crítica
+   - Botones deshabilitados según permisos
 
 3. **Confirmación de Eliminación**
-   - Doble confirmación
-   - Requiere contraseña del usuario
+   - Doble confirmación con JOptionPane
+   - Requiere contraseña del usuario actual
+   - Validación contra la base de datos
 
 4. **Prepared Statements**
    - Prevención de SQL Injection
-   - Parametrización de consultas
+   - Parametrización de todas las consultas
+   - Uso de placeholders (?) en queries
+
+5. **Validación de Datos**
+   - Campos obligatorios verificados
+   - Montos solo positivos
+   - Tipos de transacción restringidos (CHECK)
 
 ---
 
@@ -764,10 +550,11 @@ Dashboard Principal
 **Solución**:
 ```bash
 # Descargar el driver
-wget https://jdbc.postgresql.org/download/postgresql-42.7.1.jar
+wget https://jdbc.postgresql.org/download/postgresql-42.7.7.jar
 
-# Agregar al classpath
-java -cp .:postgresql-42.7.1.jar vistas.PortadaContaBook
+# Agregarlo a Dependencies en el IDE
+# O agregarlo al classpath:
+java -cp .:postgresql-42.7.7.jar vistas.PortadaContaBook
 ```
 
 ### Error: "Connection refused"
@@ -783,39 +570,104 @@ sudo service postgresql status
 sudo service postgresql start
 
 # Verificar puerto (debe ser 5432)
-psql -U postgres -c "SHOW port;"
+sudo netstat -plunt | grep postgres
 ```
+
+### Error: "Error al cargar cuentas"
+
+**Causa**: La tabla `cuentas` no existe.
+
+**Solución**:
+```sql
+-- Crear tabla de cuentas
+CREATE TABLE cuentas (
+    idcuenta SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) UNIQUE NOT NULL,
+    saldo DECIMAL(15, 2) DEFAULT 0.00
+);
+
+-- Insertar cuentas iniciales
+INSERT INTO cuentas (nombre) VALUES
+('Caja'), ('Bancos'), ('Inventario'),
+('Proveedores'), ('Ventas'), ('Gastos Operativos');
+```
+
+### Error al generar PDF
+
+**Causa**: La librería iText no está en el classpath.
+
+**Solución**:
+1. Verificar que `itextpdf-5.5.13.3.jar` esté en Dependencies
+2. Limpiar y reconstruir el proyecto
+3. Verificar permisos de escritura en la carpeta de destino
 
 ### Error: "Usuario o contraseña incorrectos"
 
 **Causa**: Credenciales incorrectas o usuario no existe.
 
 **Solución**:
-1. Verifica que el usuario existe en la BD
-2. Usa las credenciales por defecto: `admin` / `admin123`
-3. Si olvidaste la contraseña, inserta un nuevo usuario admin
+1. Verifica que el usuario existe: `SELECT * FROM usuario WHERE usuario = 'admin';`
+2. Usa credenciales por defecto: `admin` / `admin123`
+3. Resetear contraseña:
+```sql
+UPDATE usuario 
+SET contraseña = '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9' 
+WHERE usuario = 'admin';
+```
 
 ---
 
 ## 📝 Roadmap
 
-### Versión Actual: 1.0.0
-- ✅ Sistema de autenticación
-- ✅ CRUD de partidas contables
-- ✅ Adjuntar documentos
+### ✅ Versión 1.0.0 (Actual)
+- ✅ Sistema de autenticación con encriptación
+- ✅ CRUD completo de partidas contables
+- ✅ Adjuntar documentos (PDF, imágenes, DOC)
 - ✅ Resumen financiero en tiempo real
+- ✅ Gestión de cuentas contables
+- ✅ Filtros y períodos avanzados
+- ✅ Reportes PDF (Balance General y Libro Mayor)
+- ✅ Gestión completa de usuarios
+
+### 🚀 Versión 2.0.0 (Planificado)
+- [ ] Gráficos y estadísticas visuales (JFreeChart)
+- [ ] Exportación a Excel (.xlsx)
+- [ ] Backup automático de base de datos
+- [ ] Modo oscuro / Light mode
+- [ ] Multi-empresa (varias empresas en una BD)
+- [ ] Dashboard con widgets personalizables
+- [ ] Notificaciones y alertas por correo
+- [ ] API REST para integración externa
+- [ ] Módulo de presupuestos
+- [ ] Conciliación bancaria
+- [ ] Reportes personalizados con filtros avanzados
+
+---
 
 ## 👨‍💻 Autor
 
-**nemma**
-- GitHub: [@nemma](https://github.com/nemma)
+**Nemma**
+- GitHub: [@blackghossst](https://github.com/blackghossst)
 - Email: nemmanuel2001@gmail.com
 
-- GitHub: Melida20
-- Email: fm21015@ues.edu.sv
+---
 
 <div align="center">
 
-**⭐ Proyecto 2025 Sistemas Contables ⭐**
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT. Ver archivo `LICENSE` para más detalles.
+
+---
+
+**⭐ Proyecto 2025 - Sistemas Contables ⭐**
+
+Si este proyecto te fue útil, considera darle una estrella en GitHub ⭐
+
+---
+
+**Universidad de El Salvador**  
+**Facultad de Ingeniería y Arquitectura**  
+**Escuela de Ingeniería de Sistemas Informáticos**
 
 </div>

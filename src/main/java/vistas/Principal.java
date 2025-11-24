@@ -27,6 +27,15 @@ import java.util.HashMap;
 
 public class Principal extends JFrame {
     
+    // Definición de colores verdes consistentes
+    private static final Color COLOR_VERDE_PRINCIPAL = new Color(140, 160, 140);
+    private static final Color COLOR_VERDE_CLARO = new Color(220, 235, 220);
+    private static final Color COLOR_VERDE_HOVER = new Color(200, 220, 200);
+    private static final Color COLOR_VERDE_INACTIVO = new Color(200, 215, 200);
+    private static final Color COLOR_VERDE_BORDE = new Color(180, 200, 180);
+    private static final Color COLOR_VERDE_FONDO_PANEL = new Color(245, 250, 245);
+    private static final Color COLOR_VERDE_FONDO_GENERAL = new Color(240, 242, 235);
+    
     private String nombreUsuario;
     private String apellidoUsuario;
     private String rolUsuario;
@@ -73,13 +82,13 @@ public class Principal extends JFrame {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         
         JPanel panelPrincipal = new JPanel();
-        panelPrincipal.setBackground(new Color(240, 242, 235));
+        panelPrincipal.setBackground(COLOR_VERDE_FONDO_GENERAL);
         panelPrincipal.setLayout(new BorderLayout(10, 10));
         panelPrincipal.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
         
         // ========== HEADER ==========
         JPanel panelHeader = new JPanel(new BorderLayout());
-        panelHeader.setBackground(new Color(240, 242, 235));
+        panelHeader.setBackground(COLOR_VERDE_FONDO_GENERAL);
         panelHeader.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
         
         JLabel lblTitulo = new JLabel("ContaBook - Libro de Cuentas");
@@ -87,7 +96,7 @@ public class Principal extends JFrame {
         lblTitulo.setForeground(Color.BLACK);
         
         JPanel panelUsuario = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        panelUsuario.setBackground(new Color(240, 242, 235));
+        panelUsuario.setBackground(COLOR_VERDE_FONDO_GENERAL);
         
         JLabel lblUsuario = new JLabel(nombreUsuario + " " + apellidoUsuario);
         lblUsuario.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -98,7 +107,7 @@ public class Principal extends JFrame {
         
         JButton btnCerrarSesion = new JButton("Cerrar Sesión");
         btnCerrarSesion.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        btnCerrarSesion.setBackground(new Color(140, 160, 140));
+        btnCerrarSesion.setBackground(COLOR_VERDE_PRINCIPAL);
         btnCerrarSesion.setForeground(Color.WHITE);
         btnCerrarSesion.setFocusPainted(false);
         btnCerrarSesion.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -107,7 +116,7 @@ public class Principal extends JFrame {
         
         JPanel panelInfoUsuario = new JPanel();
         panelInfoUsuario.setLayout(new BoxLayout(panelInfoUsuario, BoxLayout.Y_AXIS));
-        panelInfoUsuario.setBackground(new Color(240, 242, 235));
+        panelInfoUsuario.setBackground(COLOR_VERDE_FONDO_GENERAL);
         panelInfoUsuario.add(lblUsuario);
         panelInfoUsuario.add(lblRol);
         
@@ -120,7 +129,7 @@ public class Principal extends JFrame {
         
         // ========== TABS ==========
         JPanel panelTabs = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        panelTabs.setBackground(new Color(240, 242, 235));
+        panelTabs.setBackground(COLOR_VERDE_FONDO_GENERAL);
         
         JButton btnPanelPrincipal = crearBotonTab("Panel Principal", true);
         JButton btnPeriodos = crearBotonTab("Períodos", false);
@@ -130,19 +139,19 @@ public class Principal extends JFrame {
         
         if (rolUsuario.equalsIgnoreCase("Usuario")) {
             btnPeriodos.setEnabled(false);
-            btnPeriodos.setBackground(new Color(180, 180, 180));
+            btnPeriodos.setBackground(COLOR_VERDE_INACTIVO);
             btnReportes.setEnabled(false);
-            btnReportes.setBackground(new Color(180, 180, 180));
+            btnReportes.setBackground(COLOR_VERDE_INACTIVO);
             btnCuentas.setEnabled(false);
-            btnCuentas.setBackground(new Color(180, 180, 180));
+            btnCuentas.setBackground(COLOR_VERDE_INACTIVO);
             btnUsuarios.setEnabled(false);
-            btnUsuarios.setBackground(new Color(180, 180, 180));
+            btnUsuarios.setBackground(COLOR_VERDE_INACTIVO);
         } else if (rolUsuario.equalsIgnoreCase("Contador")) {
             btnUsuarios.setEnabled(false);
-            btnUsuarios.setBackground(new Color(180, 180, 180));
+            btnUsuarios.setBackground(COLOR_VERDE_INACTIVO);
         } else if (!rolUsuario.equalsIgnoreCase("Admin") && !rolUsuario.equalsIgnoreCase("Administrador")) {
             btnUsuarios.setEnabled(false);
-            btnUsuarios.setBackground(new Color(180, 180, 180));
+            btnUsuarios.setBackground(COLOR_VERDE_INACTIVO);
         }
         
         panelTabs.add(btnPanelPrincipal);
@@ -187,7 +196,7 @@ public class Principal extends JFrame {
         JButton btnFormTitulo = new JButton("+ Nueva Partida Contable");
         btnFormTitulo.setFont(new Font("Segoe UI", Font.BOLD, 16));
         btnFormTitulo.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        btnFormTitulo.setBackground(new Color(220, 235, 220));
+        btnFormTitulo.setBackground(COLOR_VERDE_CLARO);
         btnFormTitulo.setForeground(Color.BLACK);
         btnFormTitulo.setFocusPainted(false);
         btnFormTitulo.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -198,10 +207,10 @@ public class Principal extends JFrame {
         // Efecto hover
         btnFormTitulo.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent evt) {
-                btnFormTitulo.setBackground(new Color(200, 220, 200));
+                btnFormTitulo.setBackground(COLOR_VERDE_HOVER);
             }
             public void mouseExited(MouseEvent evt) {
-                btnFormTitulo.setBackground(new Color(220, 235, 220));
+                btnFormTitulo.setBackground(COLOR_VERDE_CLARO);
             }
         });
         
@@ -270,7 +279,7 @@ public class Principal extends JFrame {
         panelContenido.add(panelDerecho, BorderLayout.CENTER);
         
         JPanel panelTop = new JPanel(new BorderLayout());
-        panelTop.setBackground(new Color(240, 242, 235));
+        panelTop.setBackground(COLOR_VERDE_FONDO_GENERAL);
         panelTop.add(panelHeader, BorderLayout.NORTH);
         panelTop.add(panelTabs, BorderLayout.SOUTH);
         
@@ -289,10 +298,10 @@ public class Principal extends JFrame {
         btn.setPreferredSize(new Dimension(180, 40));
         
         if (activo) {
-            btn.setBackground(new Color(140, 160, 140));
+            btn.setBackground(COLOR_VERDE_PRINCIPAL);
             btn.setForeground(Color.WHITE);
         } else {
-            btn.setBackground(new Color(200, 215, 200));
+            btn.setBackground(COLOR_VERDE_INACTIVO);
             btn.setForeground(new Color(80, 80, 80));
         }
         
@@ -302,9 +311,9 @@ public class Principal extends JFrame {
     private JPanel crearPanelResumen(String titulo, String subtitulo, String tipo) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBackground(new Color(245, 250, 245));
+        panel.setBackground(COLOR_VERDE_FONDO_PANEL);
         panel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(180, 200, 180), 1),
+            BorderFactory.createLineBorder(COLOR_VERDE_BORDE, 1),
             BorderFactory.createEmptyBorder(15, 15, 15, 15)
         ));
         
@@ -350,9 +359,9 @@ public class Principal extends JFrame {
         JTextField txt = new JTextField();
         txt.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         txt.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
-        txt.setBackground(new Color(200, 220, 200));
+        txt.setBackground(COLOR_VERDE_HOVER);
         txt.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(180, 200, 180), 1),
+            BorderFactory.createLineBorder(COLOR_VERDE_BORDE, 1),
             BorderFactory.createEmptyBorder(5, 10, 5, 10)
         ));
         
@@ -422,7 +431,7 @@ public class Principal extends JFrame {
                     JOptionPane.WARNING_MESSAGE);
                 return;
             }
-        } catch (NumberFormatException e) {
+                } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this,
                 "El monto debe ser un número válido",
                 "Monto inválido",
@@ -442,7 +451,7 @@ public class Principal extends JFrame {
         }
     }
     
-        private boolean guardarPartida(String fecha, String referencia, String tipo, String categoria, String descripcion, String monto) {
+    private boolean guardarPartida(String fecha, String referencia, String tipo, String categoria, String descripcion, String monto) {
         Connection conn = null;
         PreparedStatement stmt = null;
         
@@ -859,7 +868,7 @@ public class Principal extends JFrame {
         filaEditando = -1;
         idTransaccionEditando = -1;
         btnAgregarPartida.setText("+ Agregar Partida");
-        btnAgregarPartida.setBackground(new Color(140, 160, 140));
+        btnAgregarPartida.setBackground(COLOR_VERDE_PRINCIPAL);
     }
     
     private void cerrarSesion() {
@@ -900,7 +909,7 @@ public class Principal extends JFrame {
         
         JButton btnBalanceGeneral = new JButton("Balance General");
         btnBalanceGeneral.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        btnBalanceGeneral.setBackground(new Color(140, 160, 140));
+        btnBalanceGeneral.setBackground(COLOR_VERDE_PRINCIPAL);
         btnBalanceGeneral.setForeground(Color.WHITE);
         btnBalanceGeneral.setFocusPainted(false);
         btnBalanceGeneral.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -908,7 +917,7 @@ public class Principal extends JFrame {
         
         JButton btnLibroMayor = new JButton("Libro Mayor");
         btnLibroMayor.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        btnLibroMayor.setBackground(new Color(140, 160, 140));
+        btnLibroMayor.setBackground(COLOR_VERDE_PRINCIPAL);
         btnLibroMayor.setForeground(Color.WHITE);
         btnLibroMayor.setFocusPainted(false);
         btnLibroMayor.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -970,7 +979,8 @@ public class Principal extends JFrame {
     JPanel panelBotones = new JPanel(new FlowLayout());
     JButton btnDescargarPDF = new JButton("📄 Descargar PDF");
     btnDescargarPDF.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-    btnDescargarPDF.setBackground(new Color(140, 160, 140));
+        btnDescargarPDF.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+    btnDescargarPDF.setBackground(COLOR_VERDE_PRINCIPAL);
     btnDescargarPDF.setForeground(Color.WHITE);
     btnDescargarPDF.setFocusPainted(false);
     btnDescargarPDF.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -1019,7 +1029,7 @@ private void mostrarLibroMayor() {
     JPanel panelBotones = new JPanel(new FlowLayout());
     JButton btnDescargarPDF = new JButton("📄 Descargar PDF");
     btnDescargarPDF.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-    btnDescargarPDF.setBackground(new Color(140, 160, 140));
+    btnDescargarPDF.setBackground(COLOR_VERDE_PRINCIPAL);
     btnDescargarPDF.setForeground(Color.WHITE);
     btnDescargarPDF.setFocusPainted(false);
     btnDescargarPDF.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -1034,10 +1044,11 @@ private void mostrarLibroMayor() {
 
     
     private void mostrarCuentas() {
-        JFrame ventanaCuentas = new JFrame("Cuentas T - ContaBook");
-        ventanaCuentas.setSize(1000, 700);
-        ventanaCuentas.setLocationRelativeTo(this);
-        ventanaCuentas.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    JFrame ventanaCuentas = new JFrame("Cuentas T - ContaBook");
+    ventanaCuentas.setExtendedState(JFrame.MAXIMIZED_BOTH); // ⬅️ Pantalla completa
+    ventanaCuentas.setLocationRelativeTo(this);
+    ventanaCuentas.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    ventanaCuentas.setVisible(true);
         
         JPanel panelCuentas = new JPanel(new BorderLayout());
         panelCuentas.setBackground(Color.WHITE);
@@ -1058,7 +1069,7 @@ private void mostrarLibroMayor() {
         txtNuevaCuenta.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         JButton btnAgregarCuenta = new JButton("Agregar Cuenta");
         btnAgregarCuenta.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        btnAgregarCuenta.setBackground(new Color(140, 160, 140));
+        btnAgregarCuenta.setBackground(COLOR_VERDE_PRINCIPAL);
         btnAgregarCuenta.setForeground(Color.WHITE);
         btnAgregarCuenta.setFocusPainted(false);
         btnAgregarCuenta.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -1377,9 +1388,4 @@ private void mostrarLibroMayor() {
         return 0.00;
     }
     
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new Principal("Juan", "Pérez", "Administrador").setVisible(true);
-        });
-    }
 }

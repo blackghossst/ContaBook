@@ -41,7 +41,7 @@ public class PortadaContaBook extends JFrame {
         panelContenido.setBorder(BorderFactory.createEmptyBorder(60, 50, 40, 50));
         
         // Icono/Logo - Cambiado a calculadora como el login
-        JLabel lblLogo = new JLabel("🧮");
+        JLabel lblLogo = new JLabel("");
         lblLogo.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 80));
         lblLogo.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblLogo.setForeground(Color.BLACK); // Cambiado a negro
@@ -76,10 +76,10 @@ public class PortadaContaBook extends JFrame {
 "y gestión de libros de cuentas de forma local. Permite a usuarios y empresas llevar\n" +
 "un control detallado de sus transacciones contables de manera\n" +
 "eficiente, organizada y segura sin depender de un navegador web.\n\n" +
-"✓ Registro de ingresos y egresos\n" +
-"✓ Gestión de cuentas contables\n" +
-"✓ Generación de reportes financieros\n" +
-"✓ Interfaz intuitiva y fácil de usar"
+" Registro de ingresos y egresos\n" +
+" Gestión de cuentas contables\n" +
+" Generación de reportes financieros\n" +
+" Interfaz intuitiva y fácil de usar"
         );
         txtDescripcion.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         txtDescripcion.setForeground(new Color(80, 80, 80)); // Gris oscuro

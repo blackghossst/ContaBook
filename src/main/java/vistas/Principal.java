@@ -13,6 +13,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import vistas.FormularioPartida;
+import vistas.Periodos;
+import vistas.PortadaContaBook;
+import vistas.Usuarios;
+
+
+// Nuevas importaciones para reportes y cuentas
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 public class Principal extends JFrame {
     
@@ -56,9 +67,9 @@ public class Principal extends JFrame {
     
     private void inicializarComponentes() {
         setTitle("ContaBook - Libro de Cuentas");
- setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    setLocationRelativeTo(null);
-    setResizable(true);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setResizable(true);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         
         JPanel panelPrincipal = new JPanel();
@@ -114,6 +125,7 @@ public class Principal extends JFrame {
         JButton btnPanelPrincipal = crearBotonTab("Panel Principal", true);
         JButton btnPeriodos = crearBotonTab("Períodos", false);
         JButton btnReportes = crearBotonTab("Reportes", false);
+        JButton btnCuentas = crearBotonTab("Cuentas", false); // Nueva pestaña para cuentas
         JButton btnUsuarios = crearBotonTab("Usuarios", false);
         
         if (rolUsuario.equalsIgnoreCase("Usuario")) {
@@ -121,6 +133,8 @@ public class Principal extends JFrame {
             btnPeriodos.setBackground(new Color(180, 180, 180));
             btnReportes.setEnabled(false);
             btnReportes.setBackground(new Color(180, 180, 180));
+            btnCuentas.setEnabled(false);
+            btnCuentas.setBackground(new Color(180, 180, 180));
             btnUsuarios.setEnabled(false);
             btnUsuarios.setBackground(new Color(180, 180, 180));
         } else if (rolUsuario.equalsIgnoreCase("Contador")) {
@@ -134,22 +148,19 @@ public class Principal extends JFrame {
         panelTabs.add(btnPanelPrincipal);
         panelTabs.add(btnPeriodos);
         btnPeriodos.addActionListener(e -> {
-        Periodos ventanaPeriodos = new Periodos(nombreUsuario, apellidoUsuario, rolUsuario);
-        ventanaPeriodos.setVisible(true);
-});
+            Periodos ventanaPeriodos = new Periodos(nombreUsuario, apellidoUsuario, rolUsuario);
+            ventanaPeriodos.setVisible(true);
+        });
         panelTabs.add(btnReportes);
-        btnReportes.addActionListener(e -> {
-    Reportes rp = new Reportes(nombreUsuario, apellidoUsuario, rolUsuario);
-    rp.setVisible(true);
-    dispose();
-});
-        
+        btnReportes.addActionListener(e -> mostrarReportes()); // Acción para reportes
+        panelTabs.add(btnCuentas);
+        btnCuentas.addActionListener(e -> mostrarCuentas()); // Acción para cuentas
         panelTabs.add(btnUsuarios);
         btnUsuarios.addActionListener(e -> {
-    Usuarios ventanaUsuarios = new Usuarios(nombreUsuario, apellidoUsuario, rolUsuario);
-    ventanaUsuarios.setVisible(true);
-    dispose();
-});
+            Usuarios ventanaUsuarios = new Usuarios(nombreUsuario, apellidoUsuario, rolUsuario);
+            ventanaUsuarios.setVisible(true);
+            dispose();
+        });
         
         // ========== CONTENIDO PRINCIPAL ==========
         JPanel panelContenido = new JPanel(new BorderLayout(15, 15));
@@ -172,7 +183,7 @@ public class Principal extends JFrame {
         panelResumen.add(crearPanelResumen("Balance", "Comienzo del período", "blue"));
         
         // Formulario
-      // Botón desplegable con hover
+        // Botón desplegable con hover
         JButton btnFormTitulo = new JButton("+ Nueva Partida Contable");
         btnFormTitulo.setFont(new Font("Segoe UI", Font.BOLD, 16));
         btnFormTitulo.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -366,7 +377,6 @@ public class Principal extends JFrame {
             lblDocumento.setForeground(new Color(0, 120, 0));
         }
     }
-
     
     private void agregarPartida() {
         if (!rolUsuario.equalsIgnoreCase("Usuario") && 
@@ -432,7 +442,7 @@ public class Principal extends JFrame {
         }
     }
     
-    private boolean guardarPartida(String fecha, String referencia, String tipo, String categoria, String descripcion, String monto) {
+        private boolean guardarPartida(String fecha, String referencia, String tipo, String categoria, String descripcion, String monto) {
         Connection conn = null;
         PreparedStatement stmt = null;
         
@@ -480,6 +490,7 @@ public class Principal extends JFrame {
         } finally {
             try {
                 if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -487,162 +498,164 @@ public class Principal extends JFrame {
     }
     
     public void cargarDatos() {
-    Connection conn = null;
-    PreparedStatement stmt = null;
-    ResultSet rs = null;
-    
-    try {
-        conn = Conexion.getConexion();
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
         
-        if (conn == null) {
-            return;
-        }
-        
-        modeloTabla.setRowCount(0);
-        
-        String sql = "SELECT * FROM transacciones ORDER BY idtransaccion DESC";
-        stmt = conn.prepareStatement(sql);
-        rs = stmt.executeQuery();
-        
-        int contador = 0;
-        while (rs.next()) {
-            int id = rs.getInt("idtransaccion");
-            String fecha = rs.getString("fecha");
-            String tipo = rs.getString("tipo");
-            String categoria = rs.getString("categoria");
-            String descripcion = rs.getString("descripcion");
-            double monto = rs.getDouble("monto");
-            byte[] documento = rs.getBytes("documento");
+        try {
+            conn = Conexion.getConexion();
             
-            String montoFormateado;
-            if (tipo.equalsIgnoreCase("Ingreso")) {
-                montoFormateado = "+" + String.format("%.2f", monto) + " US$";
-            } else {
-                montoFormateado = "-" + String.format("%.2f", monto) + " US$";
+            if (conn == null) {
+                return;
             }
             
-            String docIcono = (documento != null && documento.length > 0) ? "📄" : "-";
+            modeloTabla.setRowCount(0);
             
-            modeloTabla.addRow(new Object[]{
-                id,
-                fecha, 
-                tipo, 
-                categoria, 
-                descripcion, 
-                montoFormateado,
-                docIcono,
-                "✏️",
-                "🗑️"
-            });
+            String sql = "SELECT * FROM transacciones ORDER BY idtransaccion DESC";
+            stmt = conn.prepareStatement(sql);
+            rs = stmt.executeQuery();
             
-            contador++;
-        }
-        
-        lblContadorTransacciones.setText("📋 Registro de Transacciones (" + contador + ")");
-        
-    } catch (SQLException e) {
-        JOptionPane.showMessageDialog(this,
-            "Error al cargar transacciones:\n" + e.getMessage(),
-            "Error de BD",
-            JOptionPane.ERROR_MESSAGE);
-        e.printStackTrace();
-        
-    } finally {
-        try {
-            if (rs != null) rs.close();
-            if (stmt != null) stmt.close();
+            int contador = 0;
+            while (rs.next()) {
+                int id = rs.getInt("idtransaccion");
+                String fecha = rs.getString("fecha");
+                String tipo = rs.getString("tipo");
+                String categoria = rs.getString("categoria");
+                String descripcion = rs.getString("descripcion");
+                double monto = rs.getDouble("monto");
+                byte[] documento = rs.getBytes("documento");
+                
+                String montoFormateado;
+                if (tipo.equalsIgnoreCase("Ingreso")) {
+                    montoFormateado = "+" + String.format("%.2f", monto) + " US$";
+                } else {
+                    montoFormateado = "-" + String.format("%.2f", monto) + " US$";
+                }
+                
+                String docIcono = (documento != null && documento.length > 0) ? "📄" : "-";
+                
+                modeloTabla.addRow(new Object[]{
+                    id,
+                    fecha, 
+                    tipo, 
+                    categoria, 
+                    descripcion, 
+                    montoFormateado,
+                    docIcono,
+                    "✏️",
+                    "🗑️"
+                });
+                
+                contador++;
+            }
+            
+            lblContadorTransacciones.setText("📋 Registro de Transacciones (" + contador + ")");
+            
         } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this,
+                "Error al cargar transacciones:\n" + e.getMessage(),
+                "Error de BD",
+                JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
+            
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
-}
 
-public void actualizarResumen() {
-    Connection conn = null;
-    PreparedStatement stmt = null;
-    ResultSet rs = null;
-    
-    try {
-        conn = Conexion.getConexion();
+    public void actualizarResumen() {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
         
-        if (conn == null) {
+        try {
+            conn = Conexion.getConexion();
+            
+            if (conn == null) {
+                return;
+            }
+            
+            // Calcular total de ingresos
+            String sqlIngresos = "SELECT COALESCE(SUM(monto), 0) as total FROM transacciones WHERE tipo = 'Ingreso'";
+            stmt = conn.prepareStatement(sqlIngresos);
+            rs = stmt.executeQuery();
+            
+            double totalIngresos = 0;
+            if (rs.next()) {
+                totalIngresos = rs.getDouble("total");
+            }
+            rs.close();
+            stmt.close();
+            
+            // Calcular total de gastos
+            String sqlGastos = "SELECT COALESCE(SUM(monto), 0) as total FROM transacciones WHERE tipo = 'Gasto'";
+            stmt = conn.prepareStatement(sqlGastos);
+            rs = stmt.executeQuery();
+            
+            double totalGastos = 0;
+            if (rs.next()) {
+                totalGastos = rs.getDouble("total");
+            }
+            
+            // Calcular balance
+            double balance = totalIngresos - totalGastos;
+            
+            // Actualizar labels
+            lblTotalIngresos.setText(String.format("%.2f US$", totalIngresos));
+            lblTotalGastos.setText(String.format("-%.2f US$", totalGastos));
+            lblBalance.setText(String.format("%.2f US$", balance));
+            
+            // Cambiar color del balance según sea positivo o negativo
+            if (balance >= 0) {
+                lblBalance.setForeground(new Color(0, 150, 0));
+            } else {
+                lblBalance.setForeground(new Color(200, 0, 0));
+            }
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    private void editarPartida(int fila) {
+        // Verificar permisos
+        if (!rolUsuario.equalsIgnoreCase("Admin") && 
+            !rolUsuario.equalsIgnoreCase("Administrador") && 
+            !rolUsuario.equalsIgnoreCase("Contador")) {
+            JOptionPane.showMessageDialog(this,
+                "No tiene permisos para editar partidas",
+                "Acceso denegado",
+                JOptionPane.ERROR_MESSAGE);
             return;
         }
         
-        // Calcular total de ingresos
-        String sqlIngresos = "SELECT COALESCE(SUM(monto), 0) as total FROM transacciones WHERE tipo = 'Ingreso'";
-        stmt = conn.prepareStatement(sqlIngresos);
-        rs = stmt.executeQuery();
+        // Obtener el ID de la transacción
+        int idTransaccion = (int) modeloTabla.getValueAt(fila, 0);
         
-        double totalIngresos = 0;
-        if (rs.next()) {
-            totalIngresos = rs.getDouble("total");
-        }
-        rs.close();
-        stmt.close();
-        
-        // Calcular total de gastos
-        String sqlGastos = "SELECT COALESCE(SUM(monto), 0) as total FROM transacciones WHERE tipo = 'Gasto'";
-        stmt = conn.prepareStatement(sqlGastos);
-        rs = stmt.executeQuery();
-        
-        double totalGastos = 0;
-        if (rs.next()) {
-            totalGastos = rs.getDouble("total");
-        }
-        
-        // Calcular balance
-        double balance = totalIngresos - totalGastos;
-        
-        // Actualizar labels
-        lblTotalIngresos.setText(String.format("%.2f US$", totalIngresos));
-        lblTotalGastos.setText(String.format("-%.2f US$", totalGastos));
-        lblBalance.setText(String.format("%.2f US$", balance));
-        
-        // Cambiar color del balance según sea positivo o negativo
-        if (balance >= 0) {
-            lblBalance.setForeground(new Color(0, 150, 0));
-        } else {
-            lblBalance.setForeground(new Color(200, 0, 0));
-        }
-        
-    } catch (SQLException e) {
-        e.printStackTrace();
-        
-    } finally {
-        try {
-            if (rs != null) rs.close();
-            if (stmt != null) stmt.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        // Abrir el formulario en modo edición
+        FormularioPartida ff = new FormularioPartida( this, 
+            nombreUsuario, 
+            apellidoUsuario, 
+            rolUsuario, 
+            idTransaccion  // Pasar el ID para edición
+        );
+        ff.setVisible(true);
     }
-}
-    
-    private void editarPartida(int fila) {
-    // Verificar permisos
-    if (!rolUsuario.equalsIgnoreCase("Admin") && 
-        !rolUsuario.equalsIgnoreCase("Administrador") && 
-        !rolUsuario.equalsIgnoreCase("Contador")) {
-        JOptionPane.showMessageDialog(this,
-            "No tiene permisos para editar partidas",
-            "Acceso denegado",
-            JOptionPane.ERROR_MESSAGE);
-        return;
-    }
-    
-    // Obtener el ID de la transacción
-    int idTransaccion = (int) modeloTabla.getValueAt(fila, 0);
-    
-    // Abrir el formulario en modo edición
-    FormularioPartida ff = new FormularioPartida( this, 
-        nombreUsuario, 
-        apellidoUsuario, 
-        rolUsuario, 
-        idTransaccion  // Pasar el ID para edición
-    );
-    ff.setVisible(true);
-}
     
     private void eliminarPartida(int fila) {
         // Pedir contraseña de confirmación
@@ -729,6 +742,7 @@ public void actualizarResumen() {
         } finally {
             try {
                 if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -767,6 +781,7 @@ public void actualizarResumen() {
             try {
                 if (rs != null) rs.close();
                 if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -822,6 +837,7 @@ public void actualizarResumen() {
             try {
                 if (rs != null) rs.close();
                 if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -857,6 +873,508 @@ public void actualizarResumen() {
             pb.setVisible(true);
             dispose();
         }
+    }
+    
+    // ========== NUEVOS MÉTODOS PARA REPORTES Y CUENTAS ==========
+    
+    private void mostrarReportes() {
+        JFrame ventanaReportes = new JFrame("Reportes - ContaBook");
+        ventanaReportes.setSize(800, 600);
+        ventanaReportes.setLocationRelativeTo(this);
+        ventanaReportes.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        
+        JPanel panelReportes = new JPanel(new BorderLayout());
+        panelReportes.setBackground(Color.WHITE);
+        panelReportes.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        
+        // Título
+        JLabel lblTituloReportes = new JLabel("Reportes Financieros");
+        lblTituloReportes.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        lblTituloReportes.setHorizontalAlignment(SwingConstants.CENTER);
+        panelReportes.add(lblTituloReportes, BorderLayout.NORTH);
+        
+        // Panel central con opciones
+        JPanel panelOpciones = new JPanel(new GridLayout(2, 1, 20, 20));
+        panelOpciones.setBackground(Color.WHITE);
+        panelOpciones.setBorder(BorderFactory.createEmptyBorder(40, 100, 40, 100));
+        
+        JButton btnBalanceGeneral = new JButton("Balance General");
+        btnBalanceGeneral.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        btnBalanceGeneral.setBackground(new Color(140, 160, 140));
+        btnBalanceGeneral.setForeground(Color.WHITE);
+        btnBalanceGeneral.setFocusPainted(false);
+        btnBalanceGeneral.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnBalanceGeneral.addActionListener(e -> mostrarBalanceGeneral());
+        
+        JButton btnLibroMayor = new JButton("Libro Mayor");
+        btnLibroMayor.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        btnLibroMayor.setBackground(new Color(140, 160, 140));
+        btnLibroMayor.setForeground(Color.WHITE);
+        btnLibroMayor.setFocusPainted(false);
+        btnLibroMayor.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnLibroMayor.addActionListener(e -> mostrarLibroMayor());
+        
+        panelOpciones.add(btnBalanceGeneral);
+        panelOpciones.add(btnLibroMayor);
+        
+        panelReportes.add(panelOpciones, BorderLayout.CENTER);
+        
+        ventanaReportes.add(panelReportes);
+        ventanaReportes.setVisible(true);
+    }
+    
+    private void mostrarBalanceGeneral() {
+    JFrame ventanaBalance = new JFrame("Balance General - ContaBook");
+    ventanaBalance.setSize(600, 400);
+    ventanaBalance.setLocationRelativeTo(this);
+    ventanaBalance.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    
+    JPanel panelBalance = new JPanel(new BorderLayout());
+    panelBalance.setBackground(Color.WHITE);
+    panelBalance.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+    
+    // Título
+    JLabel lblTitulo = new JLabel("Balance General");
+    lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 20));
+    lblTitulo.setHorizontalAlignment(SwingConstants.CENTER);
+    panelBalance.add(lblTitulo, BorderLayout.NORTH);
+    
+    // Contenido del balance
+    JTextArea txtBalance = new JTextArea();
+    txtBalance.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+    txtBalance.setEditable(false);
+    txtBalance.setBackground(new Color(245, 245, 245));
+    txtBalance.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+    
+    // Calcular datos del balance desde BD
+    StringBuilder balance = new StringBuilder();
+    balance.append("ACTIVOS:\n");
+    balance.append("  Caja y Bancos: ").append(calcularTotalPorCategoria("Caja")).append(" US$\n");
+    balance.append("  Inventario: ").append(calcularTotalPorCategoria("Inventario")).append(" US$\n");
+    balance.append("Total Activos: ").append(calcularTotalActivos()).append(" US$\n\n");
+    
+    balance.append("PASIVOS:\n");
+    balance.append("  Proveedores: ").append(calcularTotalPorCategoria("Proveedores")).append(" US$\n");
+    balance.append("Total Pasivos: ").append(calcularTotalPasivos()).append(" US$\n\n");
+    
+    balance.append("PATRIMONIO:\n");
+    balance.append("  Capital: ").append(calcularTotalIngresos() - calcularTotalGastos()).append(" US$\n");
+    balance.append("Total Patrimonio: ").append(calcularTotalIngresos() - calcularTotalGastos()).append(" US$\n");
+    
+    txtBalance.setText(balance.toString());
+    
+    JScrollPane scrollBalance = new JScrollPane(txtBalance);
+    panelBalance.add(scrollBalance, BorderLayout.CENTER);
+    
+    // Panel de botones
+    JPanel panelBotones = new JPanel(new FlowLayout());
+    JButton btnDescargarPDF = new JButton("📄 Descargar PDF");
+    btnDescargarPDF.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+    btnDescargarPDF.setBackground(new Color(140, 160, 140));
+    btnDescargarPDF.setForeground(Color.WHITE);
+    btnDescargarPDF.setFocusPainted(false);
+    btnDescargarPDF.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    btnDescargarPDF.addActionListener(e -> GeneradorPDF.descargarBalancePDF(balance.toString(), nombreUsuario, apellidoUsuario, rolUsuario, this));
+    panelBotones.add(btnDescargarPDF);
+    
+    panelBalance.add(panelBotones, BorderLayout.SOUTH);
+    
+    ventanaBalance.add(panelBalance);
+    ventanaBalance.setVisible(true);
+}
+    
+private void mostrarLibroMayor() {
+    JFrame ventanaLibro = new JFrame("Libro Mayor - ContaBook");
+    ventanaLibro.setSize(800, 600);
+    ventanaLibro.setLocationRelativeTo(this);
+    ventanaLibro.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    
+    JPanel panelLibro = new JPanel(new BorderLayout());
+    panelLibro.setBackground(Color.WHITE);
+    panelLibro.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+    
+    // Título
+    JLabel lblTitulo = new JLabel("Libro Mayor");
+    lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 20));
+    lblTitulo.setHorizontalAlignment(SwingConstants.CENTER);
+    panelLibro.add(lblTitulo, BorderLayout.NORTH);
+    
+    // Tabla del libro mayor
+    String[] columnasLibro = {"Fecha", "Descripción", "Débito", "Crédito", "Saldo"};
+    DefaultTableModel modeloLibro = new DefaultTableModel(columnasLibro, 0);
+    
+    // Cargar datos del libro mayor desde BD
+    cargarDatosLibroMayor(modeloLibro);
+    
+    JTable tablaLibro = new JTable(modeloLibro);
+    tablaLibro.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+    tablaLibro.setRowHeight(30);
+    tablaLibro.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
+    tablaLibro.getTableHeader().setBackground(new Color(245, 245, 245));
+    
+    JScrollPane scrollLibro = new JScrollPane(tablaLibro);
+    panelLibro.add(scrollLibro, BorderLayout.CENTER);
+    
+    // Panel de botones
+    JPanel panelBotones = new JPanel(new FlowLayout());
+    JButton btnDescargarPDF = new JButton("📄 Descargar PDF");
+    btnDescargarPDF.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+    btnDescargarPDF.setBackground(new Color(140, 160, 140));
+    btnDescargarPDF.setForeground(Color.WHITE);
+    btnDescargarPDF.setFocusPainted(false);
+    btnDescargarPDF.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    btnDescargarPDF.addActionListener(e -> GeneradorPDF.descargarLibroPDF(modeloLibro, nombreUsuario, apellidoUsuario, rolUsuario, this));
+    panelBotones.add(btnDescargarPDF);
+    
+    panelLibro.add(panelBotones, BorderLayout.SOUTH);
+    
+    ventanaLibro.add(panelLibro);
+    ventanaLibro.setVisible(true);
+}
+
+    
+    private void mostrarCuentas() {
+        JFrame ventanaCuentas = new JFrame("Cuentas T - ContaBook");
+        ventanaCuentas.setSize(1000, 700);
+        ventanaCuentas.setLocationRelativeTo(this);
+        ventanaCuentas.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        
+        JPanel panelCuentas = new JPanel(new BorderLayout());
+        panelCuentas.setBackground(Color.WHITE);
+        panelCuentas.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        
+        // Título
+        JLabel lblTitulo = new JLabel("Cuentas T");
+        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        lblTitulo.setHorizontalAlignment(SwingConstants.CENTER);
+        panelCuentas.add(lblTitulo, BorderLayout.NORTH);
+        
+        // Panel para agregar nueva cuenta
+        JPanel panelAgregarCuenta = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panelAgregarCuenta.setBackground(Color.WHITE);
+        panelAgregarCuenta.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        
+        JTextField txtNuevaCuenta = new JTextField(20);
+        txtNuevaCuenta.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        JButton btnAgregarCuenta = new JButton("Agregar Cuenta");
+        btnAgregarCuenta.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        btnAgregarCuenta.setBackground(new Color(140, 160, 140));
+        btnAgregarCuenta.setForeground(Color.WHITE);
+        btnAgregarCuenta.setFocusPainted(false);
+        btnAgregarCuenta.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnAgregarCuenta.addActionListener(e -> agregarCuenta(txtNuevaCuenta.getText().trim()));
+        
+        panelAgregarCuenta.add(new JLabel("Nueva Cuenta:"));
+        panelAgregarCuenta.add(txtNuevaCuenta);
+        panelAgregarCuenta.add(btnAgregarCuenta);
+        
+        panelCuentas.add(panelAgregarCuenta, BorderLayout.NORTH);
+        
+        // Lista de cuentas con formato T
+        JPanel panelListaCuentas = new JPanel();
+        panelListaCuentas.setLayout(new BoxLayout(panelListaCuentas, BoxLayout.Y_AXIS));
+        panelListaCuentas.setBackground(Color.WHITE);
+        
+        JScrollPane scrollCuentas = new JScrollPane(panelListaCuentas);
+        scrollCuentas.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        
+        // Cargar cuentas existentes desde BD
+        cargarCuentasT(panelListaCuentas);
+        
+        panelCuentas.add(scrollCuentas, BorderLayout.CENTER);
+        
+        ventanaCuentas.add(panelCuentas);
+        ventanaCuentas.setVisible(true);
+    }
+    
+    private void agregarCuenta(String nombreCuenta) {
+        if (nombreCuenta.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Ingrese un nombre para la cuenta", "Campo vacío", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        
+        try {
+            conn = Conexion.getConexion();
+            String sql = "INSERT INTO cuentas (nombre, saldo) VALUES (?, 0.00)";
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, nombreCuenta);
+            stmt.executeUpdate();
+            
+            JOptionPane.showMessageDialog(this, "Cuenta '" + nombreCuenta + "' agregada exitosamente", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            // Recargar cuentas (necesitarías refrescar la ventana)
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error al agregar cuenta: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    private void cargarCuentasT(JPanel panel) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        
+        try {
+            conn = Conexion.getConexion();
+            String sql = "SELECT * FROM cuentas";
+            stmt = conn.prepareStatement(sql);
+            rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                String nombreCuenta = rs.getString("nombre");
+                JPanel panelCuentaT = crearPanelCuentaT(nombreCuenta);
+                panel.add(panelCuentaT);
+                panel.add(Box.createRigidArea(new Dimension(0, 10)));
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error al cargar cuentas: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    private JPanel crearPanelCuentaT(String nombreCuenta) {
+        JPanel panelCuenta = new JPanel(new BorderLayout());
+        panelCuenta.setBackground(Color.WHITE);
+        panelCuenta.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), nombreCuenta));
+        panelCuenta.setMaximumSize(new Dimension(Integer.MAX_VALUE, 200));
+        
+        // Tabla para débitos y créditos
+        String[] columnas = {"Fecha", "Descripción", "Gasto", "Ingreso"};
+        DefaultTableModel modeloCuenta = new DefaultTableModel(columnas, 0);
+        
+        // Cargar movimientos de la cuenta desde BD
+        cargarMovimientosCuenta(modeloCuenta, nombreCuenta);
+        
+        JTable tablaCuenta = new JTable(modeloCuenta);
+        tablaCuenta.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        tablaCuenta.setRowHeight(25);
+        
+        JScrollPane scrollCuenta = new JScrollPane(tablaCuenta);
+        panelCuenta.add(scrollCuenta, BorderLayout.CENTER);
+        
+        // Saldo
+        JLabel lblSaldo = new JLabel("Saldo: " + calcularSaldoCuenta(nombreCuenta) + " US$");
+        lblSaldo.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblSaldo.setHorizontalAlignment(SwingConstants.CENTER);
+        lblSaldo.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
+        panelCuenta.add(lblSaldo, BorderLayout.SOUTH);
+        
+        return panelCuenta;
+    }
+    
+    private void cargarMovimientosCuenta(DefaultTableModel modelo, String cuenta) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        
+        try {
+            conn = Conexion.getConexion();
+            String sql = "SELECT fecha, descripcion, tipo, monto FROM transacciones WHERE categoria = ? ORDER BY fecha";
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, cuenta);
+            rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                String fecha = rs.getString("fecha");
+                String descripcion = rs.getString("descripcion");
+                String tipo = rs.getString("tipo");
+                double monto = rs.getDouble("monto");
+                
+                if (tipo.equalsIgnoreCase("Ingreso")) {
+                    modelo.addRow(new Object[]{fecha, descripcion, "", String.format("%.2f", monto)});
+                } else {
+                    modelo.addRow(new Object[]{fecha, descripcion, String.format("%.2f", monto), ""});
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    private double calcularSaldoCuenta(String cuenta) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        
+        try {
+            conn = Conexion.getConexion();
+            String sql = "SELECT COALESCE(SUM(CASE WHEN tipo = 'Ingreso' THEN monto ELSE -monto END), 0) as saldo FROM transacciones WHERE categoria = ?";
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, cuenta);
+            rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getDouble("saldo");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return 0.00;
+    }
+    
+    private void cargarDatosLibroMayor(DefaultTableModel modelo) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        
+        try {
+            conn = Conexion.getConexion();
+            String sql = "SELECT fecha, descripcion, tipo, monto FROM transacciones ORDER BY fecha";
+            stmt = conn.prepareStatement(sql);
+            rs = stmt.executeQuery();
+            
+            double saldoAcumulado = 0;
+            while (rs.next()) {
+                String fecha = rs.getString("fecha");
+                String descripcion = rs.getString("descripcion");
+                String tipo = rs.getString("tipo");
+                double monto = rs.getDouble("monto");
+                
+                if (tipo.equalsIgnoreCase("Ingreso")) {
+                    saldoAcumulado += monto;
+                    modelo.addRow(new Object[]{fecha, descripcion, "", String.format("%.2f", monto), String.format("%.2f", saldoAcumulado)});
+                } else {
+                    saldoAcumulado -= monto;
+                    modelo.addRow(new Object[]{fecha, descripcion, String.format("%.2f", monto), "", String.format("%.2f", saldoAcumulado)});
+                }
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error al cargar libro mayor: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    private double calcularTotalPorCategoria(String categoria) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        
+        try {
+            conn = Conexion.getConexion();
+            String sql = "SELECT COALESCE(SUM(CASE WHEN tipo = 'Ingreso' THEN monto ELSE -monto END), 0) as total FROM transacciones WHERE categoria = ?";
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, categoria);
+            rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getDouble("total");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return 0.00;
+    }
+    
+    private double calcularTotalActivos() {
+        // Suma de categorías de activos (ejemplo: Caja, Inventario)
+        return calcularTotalPorCategoria("Caja") + calcularTotalPorCategoria("Inventario");
+    }
+    
+    private double calcularTotalPasivos() {
+        // Suma de categorías de pasivos (ejemplo: Proveedores)
+        return calcularTotalPorCategoria("Proveedores");
+    }
+    
+    private double calcularTotalIngresos() {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        
+        try {
+            conn = Conexion.getConexion();
+            String sql = "SELECT COALESCE(SUM(monto), 0) as total FROM transacciones WHERE tipo = 'Ingreso'";
+            stmt = conn.prepareStatement(sql);
+            rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getDouble("total");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return 0.00;
+    }
+    
+    private double calcularTotalGastos() {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        
+        try {
+            conn = Conexion.getConexion();
+            String sql = "SELECT COALESCE(SUM(monto), 0) as total FROM transacciones WHERE tipo = 'Gasto'";
+            stmt = conn.prepareStatement(sql);
+            rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getDouble("total");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return 0.00;
     }
     
     public static void main(String[] args) {

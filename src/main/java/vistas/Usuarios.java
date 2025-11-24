@@ -153,12 +153,6 @@ public class Usuarios extends JFrame {
             dispose();
         });
         
-        btnReportes.addActionListener(e -> {
-            Reportes ventanaReportes = new Reportes(nombreUsuario, apellidoUsuario, rolUsuario);
-            ventanaReportes.setVisible(true);
-            dispose();
-        });
-        
         panelTabs.add(btnPanelPrincipal);
         panelTabs.add(btnPeriodos);
         panelTabs.add(btnReportes);

@@ -140,30 +140,7 @@ public class LoginVista extends JFrame {
         panelRegistro.setBackground(new Color(245, 245, 245));
         panelRegistro.setLayout(new FlowLayout(FlowLayout.CENTER));
         panelRegistro.setBounds(80, 305, 440, 30);
-        
-        JLabel lblPregunta = new JLabel("¿No tienes una cuenta? ");
-        lblPregunta.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        lblPregunta.setForeground(new Color(100, 100, 100));
-        
-        lblRegistrar = new JLabel("Regístrate aquí");
-        lblRegistrar.setFont(new Font("Segoe UI", Font.ITALIC, 13));
-        lblRegistrar.setForeground(new Color(120, 140, 120));
-        lblRegistrar.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        lblRegistrar.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent evt) {
-                lblRegistrar.setForeground(new Color(100, 120, 100));
-            }
-            public void mouseExited(MouseEvent evt) {
-                lblRegistrar.setForeground(new Color(120, 140, 120));
-            }
-            public void mouseClicked(MouseEvent evt) {
-                controlador.abrirRegistro();
-            }
-        });
-        
-        panelRegistro.add(lblPregunta);
-        panelRegistro.add(lblRegistrar);
-        
+              
         panelFormulario.add(panelTituloForm);
         panelFormulario.add(lblUsuario);
         panelFormulario.add(txtUsuario);

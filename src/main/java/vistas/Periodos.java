@@ -46,10 +46,11 @@ public class Periodos extends JFrame {
     
     private void inicializarComponentes() {
         setTitle("ContaBook - Períodos");
-        setSize(1400, 900);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLocationRelativeTo(null);
-        setResizable(true);
+setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    setLocationRelativeTo(null);
+    setResizable(true);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+
         
         JPanel panelPrincipal = new JPanel();
         panelPrincipal.setBackground(new Color(240, 242, 235));

@@ -15,8 +15,8 @@ public class FormularioPartida extends JDialog {
     
     private JTextField txtFecha;
     private JTextField txtReferencia;
-    private JTextField txtTipo;
-    private JComboBox<String> comboTipo;
+    private JComboBox<String> comboTipo; // Ahora para tipos: Ingreso o Gasto
+    private JComboBox<String> comboCuenta; // Nuevo: Para cuentas desde BD
     private JTextField txtCategoria;
     private JTextField txtMonto;
     private JTextArea txtDescripcion;
@@ -54,7 +54,7 @@ public class FormularioPartida extends JDialog {
         }
     }
     
-      private void inicializarComponentes() {
+    private void inicializarComponentes() {
         setSize(600, 800);
         setLocationRelativeTo(ventanaPrincipal);
         setResizable(false);
@@ -75,6 +75,7 @@ public class FormularioPartida extends JDialog {
         JPanel panelFormulario = new JPanel();
         panelFormulario.setLayout(new BoxLayout(panelFormulario, BoxLayout.Y_AXIS));
         panelFormulario.setBackground(Color.WHITE);
+        
         // Fecha
         txtFecha = crearCampoFormulario(panelFormulario, "Fecha *");
         if (!modoEdicion) {
@@ -84,7 +85,7 @@ public class FormularioPartida extends JDialog {
         // Referencia
         txtReferencia = crearCampoFormulario(panelFormulario, "Referencia");
         
-        // Tipo
+        // Tipo (Ingreso o Gasto)
         JLabel lblTipo = new JLabel("Tipo *");
         lblTipo.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblTipo.setBorder(BorderFactory.createEmptyBorder(10, 0, 5, 0));
@@ -97,19 +98,25 @@ public class FormularioPartida extends JDialog {
         comboTipo.setBackground(new Color(200, 220, 200));
         comboTipo.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
-        // Guardar selección en txtTipo
-        txtTipo = new JTextField();
-        comboTipo.addActionListener(e -> {
-            String seleccion = (String) comboTipo.getSelectedItem();
-            if (!seleccion.equals("Seleccione...")) {
-                txtTipo.setText(seleccion);
-            }
-        });
-        
         panelFormulario.add(comboTipo);
         
-        // Categoría
-        txtCategoria = crearCampoFormulario(panelFormulario, "Categoría");
+        // Cuenta (desde BD)
+        JLabel lblCuenta = new JLabel("Cuenta *");
+        lblCuenta.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblCuenta.setBorder(BorderFactory.createEmptyBorder(10, 0, 5, 0));
+        panelFormulario.add(lblCuenta);
+        
+        comboCuenta = new JComboBox<>();
+        comboCuenta.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        comboCuenta.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        comboCuenta.setBackground(new Color(200, 220, 200));
+        comboCuenta.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        cargarCuentasEnCombo(); // Cargar cuentas desde BD
+        
+        panelFormulario.add(comboCuenta);
+        
+        // Categoría (opcional, para subcategorías)
+        txtCategoria = crearCampoFormulario(panelFormulario, "Subcategoría (opcional)");
         
         // Descripción
         JLabel lblDesc = new JLabel("Descripción *");
@@ -236,6 +243,35 @@ public class FormularioPartida extends JDialog {
         add(panelPrincipal);
     }
     
+    private void cargarCuentasEnCombo() {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        
+        try {
+            conn = Conexion.getConexion();
+            String sql = "SELECT nombre FROM cuentas ORDER BY nombre";
+            stmt = conn.prepareStatement(sql);
+            rs = stmt.executeQuery();
+            
+            comboCuenta.removeAllItems();
+            comboCuenta.addItem("Seleccione...");
+            while (rs.next()) {
+                comboCuenta.addItem(rs.getString("nombre"));
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error al cargar cuentas: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
     private void cargarDatosEdicion() {
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -254,14 +290,16 @@ public class FormularioPartida extends JDialog {
                 txtReferencia.setText(rs.getString("referencia"));
                 
                 String tipo = rs.getString("tipo");
-                txtTipo.setText(tipo);
                 if (tipo.equals("Ingreso")) {
                     comboTipo.setSelectedIndex(1);
                 } else if (tipo.equals("Gasto")) {
                     comboTipo.setSelectedIndex(2);
                 }
                 
-                txtCategoria.setText(rs.getString("categoria"));
+                String categoria = rs.getString("categoria");
+                comboCuenta.setSelectedItem(categoria); // Seleccionar la cuenta
+                
+                txtCategoria.setText(""); // Subcategoría si aplica (puedes extraerla si está concatenada)
                 txtDescripcion.setText(rs.getString("descripcion"));
                 txtMonto.setText(String.valueOf(rs.getDouble("monto")));
                 
@@ -283,6 +321,7 @@ public class FormularioPartida extends JDialog {
             try {
                 if (rs != null) rs.close();
                 if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -328,24 +367,17 @@ public class FormularioPartida extends JDialog {
     private void actualizarPartida() {
         String fecha = txtFecha.getText().trim();
         String referencia = txtReferencia.getText().trim();
-        String tipo = txtTipo.getText().trim();
-        String categoria = txtCategoria.getText().trim();
+        String tipo = (String) comboTipo.getSelectedItem();
+        String cuenta = (String) comboCuenta.getSelectedItem();
+        String subcategoria = txtCategoria.getText().trim();
         String descripcion = txtDescripcion.getText().trim();
         String monto = txtMonto.getText().trim();
         
         // Validaciones
-        if (fecha.isEmpty() || tipo.isEmpty() || descripcion.isEmpty() || monto.isEmpty()) {
+        if (fecha.isEmpty() || tipo == null || tipo.equals("Seleccione...") || cuenta == null || cuenta.equals("Seleccione...") || descripcion.isEmpty() || monto.isEmpty()) {
             JOptionPane.showMessageDialog(this,
                 "Por favor, complete todos los campos obligatorios (*)",
                 "Campos obligatorios",
-                JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        
-        if (!tipo.equalsIgnoreCase("Ingreso") && !tipo.equalsIgnoreCase("Gasto")) {
-            JOptionPane.showMessageDialog(this,
-                "Por favor, seleccione un tipo válido (Ingreso o Gasto)",
-                "Tipo inválido",
                 JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -381,22 +413,18 @@ public class FormularioPartida extends JDialog {
                 return;
             }
             
-            String sql;
+            String sqlUpdate;
             if (archivoSeleccionado != null) {
-                // Actualizar incluyendo el documento
-                sql = "UPDATE transacciones SET fecha = ?, referencia = ?, tipo = ?, " +
-                      "categoria = ?, descripcion = ?, monto = ?, documento = ? WHERE idtransaccion = ?";
+                sqlUpdate = "UPDATE transacciones SET fecha = ?, referencia = ?, tipo = ?, categoria = ?, descripcion = ?, monto = ?, documento = ? WHERE idtransaccion = ?";
             } else {
-                // Actualizar sin cambiar el documento
-                sql = "UPDATE transacciones SET fecha = ?, referencia = ?, tipo = ?, " +
-                      "categoria = ?, descripcion = ?, monto = ? WHERE idtransaccion = ?";
+                sqlUpdate = "UPDATE transacciones SET fecha = ?, referencia = ?, tipo = ?, categoria = ?, descripcion = ?, monto = ? WHERE idtransaccion = ?";
             }
             
-            stmt = conn.prepareStatement(sql);
+            stmt = conn.prepareStatement(sqlUpdate);
             stmt.setString(1, fecha);
             stmt.setString(2, referencia);
             stmt.setString(3, tipo);
-            stmt.setString(4, categoria);
+            stmt.setString(4, cuenta + (subcategoria.isEmpty() ? "" : " - " + subcategoria));
             stmt.setString(5, descripcion);
             stmt.setDouble(6, Double.parseDouble(monto));
             
@@ -434,130 +462,143 @@ public class FormularioPartida extends JDialog {
         } finally {
             try {
                 if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
     }
     
-private void guardarPartida() {
-    // Verificar permisos
-    if (!rolUsuario.equalsIgnoreCase("Usuario") && 
-        !rolUsuario.equalsIgnoreCase("Admin") && 
-        !rolUsuario.equalsIgnoreCase("Administrador") && 
-        !rolUsuario.equalsIgnoreCase("Contador")) {
-        JOptionPane.showMessageDialog(this,
-            "No tiene permisos para agregar partidas",
-            "Acceso denegado",
-            JOptionPane.ERROR_MESSAGE);
-        return;
-    }
-    
-    String fecha = txtFecha.getText().trim();
-    String referencia = txtReferencia.getText().trim();
-    String tipo = txtTipo.getText().trim();
-    String categoria = txtCategoria.getText().trim();
-    String descripcion = txtDescripcion.getText().trim();
-    String monto = txtMonto.getText().trim();
-    
-    // Validaciones
-    if (fecha.isEmpty() || tipo.isEmpty() || descripcion.isEmpty() || monto.isEmpty()) {
-        JOptionPane.showMessageDialog(this,
-            "Por favor, complete todos los campos obligatorios (*)",
-            "Campos obligatorios",
-            JOptionPane.WARNING_MESSAGE);
-        return;
-    }
-    
-    if (!tipo.equalsIgnoreCase("Ingreso") && !tipo.equalsIgnoreCase("Gasto")) {
-        JOptionPane.showMessageDialog(this,
-            "Por favor, seleccione un tipo válido (Ingreso o Gasto)",
-            "Tipo inválido",
-            JOptionPane.WARNING_MESSAGE);
-        return;
-    }
-    
-    try {
-        double montoDouble = Double.parseDouble(monto);
-        if (montoDouble <= 0) {
+    private void guardarPartida() {
+        // Verificar permisos
+        if (!rolUsuario.equalsIgnoreCase("Usuario") && 
+            !rolUsuario.equalsIgnoreCase("Admin") && 
+            !rolUsuario.equalsIgnoreCase("Administrador") && 
+            !rolUsuario.equalsIgnoreCase("Contador")) {
             JOptionPane.showMessageDialog(this,
-                "El monto debe ser mayor a cero",
-                "Monto inválido",
-                JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-    } catch (NumberFormatException e) {
-        JOptionPane.showMessageDialog(this,
-            "El monto debe ser un número válido",
-            "Monto inválido",
-            JOptionPane.WARNING_MESSAGE);
-        return;
-    }
-    
-    // Guardar en base de datos
-    Connection conn = null;
-    PreparedStatement stmt = null;
-    
-    try {
-        conn = Conexion.getConexion();
-        
-        if (conn == null) {
-            JOptionPane.showMessageDialog(this,
-                "Error: No se pudo conectar a la base de datos",
-                "Error de conexión",
+                "No tiene permisos para agregar partidas",
+                "Acceso denegado",
                 JOptionPane.ERROR_MESSAGE);
             return;
         }
         
-        String sql = "INSERT INTO transacciones (fecha, referencia, tipo, categoria, descripcion, monto, usuario, documento) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String fecha = txtFecha.getText().trim();
+        String referencia = txtReferencia.getText().trim();
+        String tipo = (String) comboTipo.getSelectedItem();
+        String cuenta = (String) comboCuenta.getSelectedItem();
+        String subcategoria = txtCategoria.getText().trim();
+        String descripcion = txtDescripcion.getText().trim();
+        String monto = txtMonto.getText().trim();
         
-        stmt = conn.prepareStatement(sql);
-        stmt.setString(1, fecha);
-        stmt.setString(2, referencia);
-        stmt.setString(3, tipo);
-        stmt.setString(4, categoria);
-        stmt.setString(5, descripcion);
-        stmt.setDouble(6, Double.parseDouble(monto));
-        stmt.setString(7, usuarioActual);
-        
-        // Guardar documento si existe
-        if (archivoSeleccionado != null) {
-            FileInputStream fis = new FileInputStream(archivoSeleccionado);
-            stmt.setBinaryStream(8, fis, (int) archivoSeleccionado.length());
-        } else {
-            stmt.setNull(8, Types.BINARY);
-        }
-        
-        int filasAfectadas = stmt.executeUpdate();
-        
-        if (filasAfectadas > 0) {
+        // Validaciones
+        if (fecha.isEmpty() || tipo == null || tipo.equals("Seleccione...") || cuenta == null || cuenta.equals("Seleccione...") || descripcion.isEmpty() || monto.isEmpty()) {
             JOptionPane.showMessageDialog(this,
-                "✅ Partida guardada exitosamente",
-                "Éxito",
-                JOptionPane.INFORMATION_MESSAGE);
-            
-            // Actualizar la ventana principal
-            ventanaPrincipal.cargarDatos();
-            ventanaPrincipal.actualizarResumen();
-            
-            // Cerrar el formulario
-            dispose();
+                "Por favor, complete todos los campos obligatorios (*)",
+                "Campos obligatorios",
+                JOptionPane.WARNING_MESSAGE);
+            return;
         }
         
-    } catch (Exception e) {
-        JOptionPane.showMessageDialog(this,
-            "Error al guardar la partida:\n" + e.getMessage(),
-            "Error de BD",
-            JOptionPane.ERROR_MESSAGE);
-        e.printStackTrace();
-        
-    } finally {
         try {
-            if (stmt != null) stmt.close();
-        } catch (SQLException e) {
+            double montoDouble = Double.parseDouble(monto);
+            if (montoDouble <= 0) {
+                JOptionPane.showMessageDialog(this,
+                    "El monto debe ser mayor a cero",
+                    "Monto inválido",
+                    JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this,
+                "El monto debe ser un número válido",
+                "Monto inválido",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        // Guardar en base de datos
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        
+        try {
+            conn = Conexion.getConexion();
+            
+            if (conn == null) {
+                JOptionPane.showMessageDialog(this,
+                    "Error: No se pudo conectar a la base de datos",
+                    "Error de conexión",
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            String sql = "INSERT INTO transacciones (fecha, referencia, tipo, categoria, descripcion, monto, usuario, documento) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, fecha);
+            stmt.setString(2, referencia);
+            stmt.setString(3, tipo);
+            stmt.setString(4, cuenta + (subcategoria.isEmpty() ? "" : " - " + subcategoria));
+            stmt.setString(5, descripcion);
+            stmt.setDouble(6, Double.parseDouble(monto));
+            stmt.setString(7, usuarioActual);
+            
+            // Guardar documento si existe
+            if (archivoSeleccionado != null) {
+                FileInputStream fis = new FileInputStream(archivoSeleccionado);
+                stmt.setBinaryStream(8, fis, (int) archivoSeleccionado.length());
+            } else {
+                stmt.setNull(8, Types.BINARY);
+            }
+            
+            int filasAfectadas = stmt.executeUpdate();
+            
+            if (filasAfectadas > 0) {
+                // Actualizar saldo de la cuenta
+                actualizarSaldoCuenta(conn, cuenta, Double.parseDouble(monto), tipo.equals("Ingreso"));
+                
+                JOptionPane.showMessageDialog(this,
+                    "✅ Partida guardada exitosamente",
+                    "Éxito",
+                    JOptionPane.INFORMATION_MESSAGE);
+                
+                // Actualizar la ventana principal
+                ventanaPrincipal.cargarDatos();
+                ventanaPrincipal.actualizarResumen();
+                
+                // Cerrar el formulario
+                dispose();
+            }
+            
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                "Error al guardar la partida:\n" + e.getMessage(),
+                "Error de BD",
+                JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
+            
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
-}
+    
+    // Método auxiliar para actualizar el saldo de una cuenta
+    private void actualizarSaldoCuenta(Connection conn, String cuenta, double monto, boolean esIngreso) throws SQLException {
+        PreparedStatement stmt = null;
+        try {
+            String sql = "UPDATE cuentas SET saldo = saldo + ? WHERE nombre = ?";
+            stmt = conn.prepareStatement(sql);
+            double ajuste = esIngreso ? monto : -monto; // Ingreso aumenta, Gasto disminuye
+            stmt.setDouble(1, ajuste);
+            stmt.setString(2, cuenta);
+            stmt.executeUpdate();
+        } finally {
+            if (stmt != null) stmt.close();
+        }
+    }
 }

@@ -624,14 +624,6 @@ WHERE usuario = 'admin';
 
 ---
 
-<div align="center">
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver archivo `LICENSE` para más detalles.
-
----
-
 **⭐ Proyecto 2025 - Sistemas Contables ⭐**
 
 Si este proyecto te fue útil, considera darle una estrella en GitHub ⭐
